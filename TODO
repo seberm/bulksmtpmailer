@@ -1,0 +1,1 @@
+socket_set_timeout($this->connection, 0, 250000); /// Use it?
