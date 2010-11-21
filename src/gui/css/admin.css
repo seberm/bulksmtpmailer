@@ -1,0 +1,81 @@
+/**
+ * @todo cele poupravit!!! ... upravit linky
+ */
+
+html, body, div, h1, h2, h3, p, ul, ol, li, address, form, fieldset, img, strong { margin: 0 auto; padding: 0; border: none; font-family: Tahoma, Verdana, Geneva, Arial, Helvetica, sans-serif; }
+body { background-color: #FFF; background-position: left top; } 
+a { text-decoration: none; }
+a:hover { text-decoration: none; }
+input { /*margin: 5px;*/ }
+
+#mainContainer { width: 850px; padding: 10px; }
+#header { width: 850px; height: 128px; background: #000 url('../images/page/layout/admin_header.jpg'); color: #FFF; margin-bottom: 3px; }
+
+#menu a { color: #FFF; }
+#menu a:hover { text-decoration: underline; color: #FFA9A6; }
+#menu { width: 150px; float: left; background: #000; color: #FFF; padding: 10px; margin-bottom: 20px; }
+
+.menuItem { float: left; clear: both; }
+
+#content { float: left; padding: 10px; margin-bottom: 20px; }
+
+#moduleContent a { color: #353535; }
+#moduleContent a:hover { text-decoration: none; color: #003D00; }
+#moduleContent input, #moduleContent select { color: #000; background: #D8D8D8; border: 2px solid #000; }
+#moduleContent { margin-top: 20px; }
+
+#footer a { color: #A1A1A1; }
+#footer a:hover { text-decoration: underline; color: #000; }
+#footer { border-top: 2px solid #A1A1A1; clear: both; text-align: center; font-weight: bold; color: #A1A1A1; font-size: 10px; padding: 5px; }
+
+.listTable th {
+	background: #9d9c9c;
+	font-weight: bold;
+	text-align: center;
+	height: 20px;
+	line-height: 20px;
+	padding: 5px;
+	border: 1px solid #9d9c9c;
+}
+.listTable table {
+	border-collapse: collapse;
+}
+.listTable td {
+	border: 1px solid #9d9c9c;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+.listTable tr.alt td {
+	background: #c5c5c5;
+}
+.listTable tr.over td {
+	background: #9d9c9c;
+}
+
+.success {
+	color: #008000;
+	background: #C6FFC9;
+}
+
+.error {
+	color: #FF0000;
+	background: #FFB9B9;
+}
+
+.success, .error {
+	text-align: center;
+	font-weight: bold;
+	font-size: 15px;
+	border: 1px solid #000000;
+	margin: 10px 0;
+	padding: 5px 0;
+}
+
+.newItem a { color: red; }
+.newItem a:hover { text-decoration: none; color: yellow; }
+.newItem {
+	color: red;
+	margin-bottom: 20px;
+	font-size: 25px;
+	font-weight: bold;
+}
