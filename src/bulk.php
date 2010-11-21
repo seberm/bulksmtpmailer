@@ -50,6 +50,8 @@ try {
 	$id = isset($messageId) ? $messageId : 0;
 
 	if(isset($_GET['id']) && is_numeric($_GET['id'])) {
+		
+// sql injection possible... I know
 		$id = $_GET['id'];
 		
 		if ($sendingActive === true) {
