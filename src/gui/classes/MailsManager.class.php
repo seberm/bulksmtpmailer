@@ -2,13 +2,15 @@
 
 include_once("classes/AdminModule.class.php");
 
-class MessagesManager extends AdminModule {
+class MailsManager extends AdminModule {
+	
 	function __construct () {
 
-		$this->moduleName = "Messages manager";
+		$this->moduleName = "Emails manager";
 	}
 
 	public function getContent () {
+		
 		$action = isset($_GET['action']) ? $_GET['action'] : "showList";
 
 		switch ($action) {
@@ -41,8 +43,7 @@ class MessagesManager extends AdminModule {
 		$contentId = isset($_GET['id']) ? $_GET['id'] : 0;
 
 		if (is_numeric($contentId) && ($contentId != 0)) {
-			
-			$sql = "SELECT * FROM `Message` WHERE `id` = ".$contentId.";";
+			$sql = "SELECT * FROM `Mail` WHERE `id` = ".$contentId.";";
 			$res = $_MySql->query($sql);
 			$row = $res->fetch_assoc();
 		} else $row = Array();
@@ -51,14 +52,13 @@ class MessagesManager extends AdminModule {
 		<form method=\"post\" action=\"?module=".get_class($this)."&amp;action=save\" enctype=\"multipart/form-data\">
 		<table border=\"0\" cellspacing=\"5\">
 			<tr>
-				<td>Subject:</td>
-				<td><input type=\"text\" name=\"subject\" value=\"".(isset($row['Subject']) ? $row['Subject'] : "")."\" /></td>
+				<td>Name:</td>
+				<td><input type=\"text\" name=\"name\" value=\"".(isset($row['Name']) ? $row['Name'] : "")."\" /></td>
 			</tr>
 			<tr>
-				<td>Message text:</td>
-				<td><textarea name=\"text\" rows=\"10\" cols=\"60\">".(isset($row['Text']) ? $row['Text'] : "")."</textarea></td>
+				<td>E-mail:</td>
+				<td><input type=\"text\" name=\"email\" value=\"".(isset($row['Email']) ? $row['Email'] : "@")."\" /></td>
 			</tr>
-			<tr><td></td><td style=\"font-style:italic; font-size:12px;\">It's possible to use HTML, but if you send message <br />you must change the option plain to HTML</td></tr>
 		 ";
 
 		$output .= "</table>
@@ -72,14 +72,14 @@ class MessagesManager extends AdminModule {
 
 
 	private function delete () {
-
+		
 		global $_MySql;
 
 		if (isset($_GET['id']))
 			$contentId = intval($_GET['id']);
 		else return "<div class=\"error\">Bad object ID</div>";
 
-		$sql = "DELETE FROM `Message` WHERE `id` = ".$contentId.";";
+		$sql = "DELETE FROM `Mail` WHERE `id` = ".$contentId.";";
 		
 		if ($_MySql->query($sql)) {
 			
@@ -91,21 +91,30 @@ class MessagesManager extends AdminModule {
 
 
 	private function save () {
-
+		
 		global $_MySql;
 
 		$contentId = isset($_POST['contentId']) ? intval($_POST['contentId']) : 0;
-		$subject = isset($_POST['subject']) ? $_POST['subject'] : "";
-		$text = isset($_POST['text']) ? $_POST['text'] : "";
+		$name = isset($_POST['name']) ? $_POST['name'] : "";
+		$email = isset($_POST['email']) ? $_POST['email'] : "";
+		
+		if (!Utils::isEmail($email)) {
+			
+			$output = "<div class=\"error\">Bad e-mail format</div>";
+			$output .= $this->showForm();
+			
+			return $output;
+		}
 
-		$sql = "INSERT INTO `Message` (`id`, `Subject`, `Text`)
-				VALUES (".$contentId.", '".$subject."', '".$text."')
-				ON DUPLICATE KEY UPDATE `Subject` = '".$subject."', `Text` = '".$text."';";
+		$sql = "INSERT INTO `Mail` (`id`, `Name`, `Email`)
+				VALUES (".$contentId.", '".$name."', '".$email."')
+				ON DUPLICATE KEY UPDATE `Name` = '".$name."', `Email` = '".$email."';";
 		$db = $_MySql->query($sql);
 
 		if ($contentId == 0)
 			$contentId = $_MySql->insert_id;
 
+		
 		if ($db)
 			$output = "<div class=\"success\">Data saved</div>";
 		else $output = "<div class=\"error\">Saving error</div>";
@@ -124,18 +133,18 @@ class MessagesManager extends AdminModule {
 		$output .= "<br /><br />";
 		$output .= "<table class=\"listTable\" cellpadding=\"5\" cellspacing=\"0\" border=\"0\">
 						<tr>
-							<th>Subject</th>
-							<th>Text</th>
+							<th>Name</th>
+							<th>E-mail</th>
 							<th>Action</th>
 						</tr>";
 
-		$sql = "SELECT `Subject`, `Text`, `id` FROM `Message` ORDER BY `id` ASC;";
+		$sql = "SELECT `id`, `Name`, `Email` FROM `Mail` ORDER BY `id` ASC;";
 		$res = $_MySql->query($sql);
 
 		while ($row = $res->fetch_assoc()) {
 			$actions = "<a href=\"?module=".get_class($this)."&amp;action=showForm&amp;id=".$row['id']."\"><img src=\"".CURRENT_ROOT."gui/images/tools/edit.png\" title=\"Edit\" alt=\"Edit\" /></a>";
-			$actions .= "<a href=\"?module=".get_class($this)."&amp;action=delete&amp;id=".$row['id']."\" onClick=\"return confirmation()\"><img src=\"".CURRENT_ROOT."gui/images/tools/remove.png\" title=\"Remove\" alt=\"Remove\" class=\"remove\" /></a>";
-			$output .= "<tr><td>".$row['Subject']."</td><td>".Utils::cutString($row['Text'], 40)."</td><td align=\"center\">".$actions."</td></tr>";
+			$actions .= "<a href=\"?module=".get_class($this)."&amp;action=delete&amp;id=".$row['id']."\"><img src=\"".CURRENT_ROOT."gui/images/tools/remove.png\" title=\"Remove\" alt=\"Remove\" class=\"remove\" /></a>";
+			$output .= "<tr><td>".$row['Name']."</td><td>".$row['Email']."</td><td align=\"center\">".$actions."</td></tr>";
 		}
 
 		$output .= "</table>";

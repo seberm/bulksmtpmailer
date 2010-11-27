@@ -19,24 +19,19 @@ echo "
 		<meta name=\"generator\" content=\"Geany\" />
 		<meta name=\"robots\" content=\"noindex, nofollow\" />
 		<link rel=\"stylesheet\" type=\"text/css\" href=\"css/admin.css\" />
+		<script type=\"text/javascript\" src=\"javascripts/jquery-1_4_4.js\"></script>
 		<script type=\"text/javascript\" src=\"javascripts/admin.js\"></script>
 		<title>BulkSMTPMailer - Administration | ".$module->moduleName."</title>
 	</head>
-	
-<script language=\"JavaScript\">
-$(document).ready(function() {
-	$(\".remove\").click(function() {
-		return confirm (\"Do you really want to delete this item?\");
-	});
-});
-</script>
 
 <body>
 <div id=\"mainContainer\">
 	<div id=\"header\"></div>
 	<div id=\"menu\">
 		<span class=\"menuItem\"><a href=\"?module=AdminWelcome\">Home</a></span>
+		<span class=\"menuItem\"><a href=\"?module=MailsManager\">E-mails manager</a></span>
 		<span class=\"menuItem\"><a href=\"?module=MessagesManager\">Messages manager</a></span>
+		<span class=\"menuItem\"><a href=\"?module=SystemManager\">System manager</a></span>
 	</div>
 	<div id=\"content\">
 		<h1>".$module->moduleName."</h1>
