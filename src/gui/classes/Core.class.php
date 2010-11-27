@@ -23,7 +23,9 @@ final class Core {
 		$moduleName = UcFirst($moduleName);
 
 		if (!class_exists($moduleName)) {
+			
 			if (file_exists("classes/".$moduleName.".class.php")) {
+				
 				require_once ("classes/".$moduleName.".class.php");
 				return true;
 			} else return false;

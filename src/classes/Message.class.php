@@ -34,6 +34,7 @@ class Message {
 		
 		$resMessage = $_MySql->query($sqlMessage);
 		if (!$resMessage) {
+			
 			throw new MessageException("Message (ID: ".$messageID.") does not exist");
 			return;
 		}

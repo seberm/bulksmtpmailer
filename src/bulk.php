@@ -30,6 +30,7 @@ if (!defined("BULK"))
 
 
 try {
+	
 	$sqlActive = "	SELECT `Value`
 					FROM `System`
 					WHERE `Item` = 'ActiveSending';";
@@ -50,9 +51,11 @@ try {
 	$id = isset($messageId) ? $messageId : 0;
 
 	if(isset($_GET['id']) && is_numeric($_GET['id'])) {
+		
 		$id = $_GET['id'];
 		
 		if ($sendingActive === true) {
+			
 			throw new BulkException("The BulkMailer is sending right now. Please wait.");
 			exit(1);
 		}
@@ -65,6 +68,7 @@ try {
 	}
 
 	if ($id <= 0) {
+		
 		throw new BulkException("The message ID does not exist.");
 		exit(1);
 	}
@@ -75,6 +79,7 @@ try {
 	$b->start();
 	
 } catch (BulkException $e) {
+	
 	echo $e->getStack();
 } 
 
