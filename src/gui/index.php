@@ -26,6 +26,8 @@
 		(@include_once(CURRENT_ROOT."tools/mysql/mysql.inc.php")) or die ("Cannot load database connection file!");
 	}
 		
+	if (!defined("UTILS"))
+    (@include_once(CURRENT_ROOT."classes/Utils.class.php")) or die ("Cannot load Utils class!");
 	
 	if (!defined("CORE"))
 		(@include_once("classes/Core.class.php")) or die ("Cannot load Core class!");
