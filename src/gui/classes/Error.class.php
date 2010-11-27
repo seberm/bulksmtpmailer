@@ -17,6 +17,7 @@ class Error {
 	 * @param string Error text
 	 */
 	public function addError ($errorText) {
+		
 		$this->errors[] = $errorText;
 	}
 	
@@ -24,6 +25,7 @@ class Error {
 	 * @return string All errors with HTML code
 	 */
 	public function printErrors () {
+		
 		foreach ($this->errors as $value)
 			$output .= "<div class=\"error\">".$value."</div>";
 		
@@ -35,7 +37,7 @@ class Error {
 	 */
 	public function reset () {
 		if (!empty($this->errors)) {
-			unset ($this->errors);
+			//unset ($this->errors);
 			$this->errors = Array ();
 		}
 		
