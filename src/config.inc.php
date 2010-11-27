@@ -24,7 +24,17 @@ $_Config = Array(
 ),
 
 
-### BULK APPLICATION ###
+### MAIN SYSTEM SETTINGS
+"system" => Array(
+
+
+### Enable/Disable GUI
+"gui" => true // true/false
+
+),
+
+
+### BULK APPLICATION - It is not neccessary to set if GUI value is enabled ###
 "bulk" => Array(
 
 ### Bound

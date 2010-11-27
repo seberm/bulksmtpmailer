@@ -61,6 +61,7 @@ class Bulk {
 		$resMails = $_MySql->query($sqlMails);
 		
 		if (!$resMails->num_rows) {
+			
 			// Signal stopped is emitted
 			$this->stopped();
 			
@@ -79,7 +80,8 @@ class Bulk {
 								$_Config['bulk']['smtp']['authType'],
 								$_Config['bulk']['smtp']['smtpType']);
 		
-		try {	
+		try {
+			
 			$this->_Smtp->setLogin($_Config['bulk']['smtp']['login']);
 			$this->_Smtp->setPassword($_Config['bulk']['smtp']['password']);
 		} catch (SmtpException $e) {
