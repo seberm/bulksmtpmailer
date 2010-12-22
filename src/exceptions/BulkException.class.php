@@ -7,7 +7,7 @@
 
 if (!defined("CURRENT_ROOT"))
 	define("CURRENT_ROOT", "../", true);
-	
+		
 
 ### Interfaces
 if (!defined("BULKERRORS"))
@@ -20,22 +20,27 @@ if (!defined("LOGGER"))
    
 
 class BulkException extends ErrorException implements BulkErrors {
+	
 	private $_Logger = null;
 
 	function __construct($msg) {
+		
 		parent::__construct($msg);
 		
-		$this->_Logger = new Logger();
+		$this->_Logger = new Logger;
 	}
 	
 	
 	public function getStack () {
+		
 		$msg = "BulkMailer - ".$this->getMessage();
 
-//only for tessting
-//$msg = "BulkMailer (File: ".pathinfo($this->getFile(), PATHINFO_FILENAME).":".$this->getLine().") - ".$this->getMessage();
+		// Only for tessting
+		//$msg = "BulkMailer (File: ".pathinfo($this->getFile(), PATHINFO_FILENAME).":".$this->getLine().") - ".$this->getMessage();
 		
+		// Write error message to system logger
 		$this->_Logger->addLog($msg);
+		
 		return $msg;
 	}
 	

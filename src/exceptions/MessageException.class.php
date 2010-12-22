@@ -16,10 +16,9 @@ if (!defined("BULKERRORS"))
 class MessageException extends ErrorException implements BulkErrors {
 	
 	public function getStack () {
-		//$msg = "SMTP: ".$this->getMessage();
 		
-//only for testing
-$msg = "MESSAGE: (File: ".pathinfo($this->getFile(), PATHINFO_FILENAME).":".$this->getLine().") - ".$this->getMessage();
+		// Only for testing
+		$msg = "MESSAGE: (File: ".pathinfo($this->getFile(), PATHINFO_FILENAME).":".$this->getLine().") - ".$this->getMessage();
 		
 		return $msg;
 	}
