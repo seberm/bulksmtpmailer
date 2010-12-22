@@ -13,74 +13,87 @@ error_reporting(E_ALL);
 // PHP and Server default settings:
 date_default_timezone_set("Europe/Prague");
 
-// Check the PHP version (>5.0.0)
-if (!version_compare(phpversion(), "5.0.0", ">="))
-    die ("You're using old PHP version - ".PHP_VERSION.".");
-    
-    
-if (!defined("MYSQL"))
-    (@include_once(CURRENT_ROOT."tools/mysql/mysql.inc.php")) or die ("Cannot load database connection file!");
-
-if (!defined("UTILS"))
-    (@include_once(CURRENT_ROOT."classes/Utils.class.php")) or die ("Cannot load Utils class!");
-
-if (!defined("BULK"))
-	(@include_once(CURRENT_ROOT."classes/Bulk.class.php")) or die ("Cannot load Bulk class!");
-
-
-
+// Global exceptions
 try {
+	// Check the PHP version (>5.0.0)
+	if (!version_compare(phpversion(), "5.0.0", ">="))
+		die("You're using old PHP version - ".PHP_VERSION.".");
 	
-	$sqlActive = "	SELECT `Value`
-					FROM `System`
-					WHERE `Item` = 'ActiveSending';";
-	$resActive = $_MySql->query($sqlActive);
-	$rowActive = $resActive->fetch_assoc();
-	$sendingActive = $rowActive['Value'];
-
-
-
-	$sqlActiveMessage = "	SELECT `Value`
-							FROM `System`
-							WHERE `Item` = 'SendingMessageID';";
-	$resActiveMessage = $_MySql->query($sqlActiveMessage);
-	$rowActiveMessage = $resActiveMessage->fetch_assoc();
-
-	$messageId = $rowActiveMessage['Value'];
-
-	$id = isset($messageId) ? $messageId : 0;
-
-	if(isset($_GET['id']) && is_numeric($_GET['id'])) {
+	// Load exceptions
+	if (!defined("DATABASEEXCEPTION"))
+		(@include_once(CURRENT_ROOT."exceptions/DatabaseException.class.php")) or die ("Cannot load DatabaseException class!");
+	
+	if (!defined("BULKEXCEPTION"))
+		(@include_once(CURRENT_ROOT."exceptions/BulkException.class.php")) or die ("Cannot load BulkException class!");
+	////////////////////////////////////////////////
 		
-// sql injection possible... I know
-		$id = $_GET['id'];
+	try {	
 		
-		if ($sendingActive === true) {
+		// Load classes
+		try {
+			if (!defined("MYSQL"))
+				(@include_once(CURRENT_ROOT."tools/mysql/mysql.inc.php")) or die ("Cannot load database connection file!");
+		
+			if (!defined("UTILS"))
+				(@include_once(CURRENT_ROOT."classes/Utils.class.php")) or die ("Cannot load Utils class!");
+		} catch (DatabaseException $e) {
 			
-			throw new BulkException("The BulkMailer is sending right now. Please wait.");
-			exit(1);
+			throw new BulkException($e->getStack());
 		}
 		
-		$sql = "UPDATE `System`
-				SET `Value` = ".$id."
-				WHERE `Item` = 'SendingMessageID';";
+		if (!defined("BULK"))
+			(@include_once(CURRENT_ROOT."classes/Bulk.class.php")) or die ("Cannot load Bulk class!");
+		////////////////////////////////////////////////
+			
+		$sqlActive = "	SELECT `Value`
+						FROM `System`
+						WHERE `Item` = 'ActiveSending';";
+		$resActive = $_MySql->query($sqlActive);
+		$rowActive = $resActive->fetch_assoc();
+		$sendingActive = $rowActive['Value'];
+	
+	
+		$sqlActiveMessage = "	SELECT `Value`
+								FROM `System`
+								WHERE `Item` = 'SendingMessageID';";
+		$resActiveMessage = $_MySql->query($sqlActiveMessage);
+		$rowActiveMessage = $resActiveMessage->fetch_assoc();
+	
+		$messageId = $rowActiveMessage['Value'];
+	
+		$id = isset($messageId) ? $messageId : 0;
+	
+		if (isset($_GET['id']) && is_numeric($_GET['id'])) {
+			
+			// SQL Injection prevention
+			$id = Utils::escape($_GET['id']);
+			
+			if ($sendingActive === true)
+				throw new BulkException("the BulkMailer is sending right now, please wait...");
+			
+			$sql = "UPDATE `System`
+					SET `Value` = ".$id."
+					WHERE `Item` = 'SendingMessageID';";
+			
+			$_MySql->query($sql);
+		}
+	
+		if ($id <= 0)
+			throw new BulkException("the message ID does not exist; exiting ...");
+	
+		$bulk = new Bulk($id);
 		
-		$_MySql->query($sql);
+		// Starts the Bulk
+		$bulk->start();
+			
+	} catch (BulkException $e) {
+		
+		echo $e->getStack();
 	}
 
-	if ($id <= 0) {
-		
-		throw new BulkException("The message ID does not exist.");
-		exit(1);
-	}
-
-	$b = new Bulk($id);
+} catch (Exception $e) {
 	
-	// Starts the Bulk
-	$b->start();
-	
-} catch (BulkException $e) {
-	
+	// Prints all not-caught exceptions
 	echo $e->getStack();
 } 
 
