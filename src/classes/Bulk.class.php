@@ -53,7 +53,7 @@ class Bulk {
 			throw new BulkException($e->getStack());
 			return;
 		}
-		
+	
 		$sqlMails = "SELECT `id` FROM `Mail`
 					 WHERE `Sent` = false
 					 LIMIT 0, ".$_Config['bulk']['batch'].";";
@@ -80,6 +80,14 @@ class Bulk {
 								$_Config['bulk']['smtp']['authType'],
 								$_Config['bulk']['smtp']['smtpType']);
 		
+		// Checks if the proxy option is enabled
+		if ($_Config['bulk']['smtp']['useProxy'] === true) {
+			
+			$server = $_Config['bulk']['smtp']['proxyServer'];
+			$port = $_Config['bulk']['smtp']['proxyPort'];
+			$this->_Smtp->useProxy($server, $port);
+		}
+								
 		try {
 			
 			$this->_Smtp->setLogin($_Config['bulk']['smtp']['login']);
@@ -126,24 +134,24 @@ class Bulk {
 		
 $bound = $_Config['bulk']['bound'].time();
 		///// toto je plain text kus zpravy
-		$output .= "Content-Type: multipart/alternative; boundary=\"".$bound."\"".CRLF.CRLF;
+		$output .= "Content-Type: multipart/alternative; boundary=\"".$bound."\"".CRLF;
 
 		$output .= "This is a multi-part message in MIME format.".CRLF;
 		$output .= "--".$bound.CRLF;
 		$output .= "Content-Type: text/plain; charset=".$_Config['bulk']['charset'].CRLF;
-		$output .= "Content-Transfer-Encoding: 7bit".CRLF.CRLF;
+		$output .= "Content-Transfer-Encoding: 7bit".CRLF;
 		
-		$output .= "Zapnete zobrazovani obrazku.".CRLF.CRLF;
+		$output .= "Zapnete zobrazovani obrazku.".CRLF;
 		$output .= "--".$bound.CRLF;
 				
 $bound2 = $_Config['bulk']['bound'].(time() + 5);
-		$output .= "Content-Type: multipart/related; boundary=\"".$bound2."\"".CRLF.CRLF;
+		$output .= "Content-Type: multipart/related; boundary=\"".$bound2."\"".CRLF;
 
 ///// this is the HTML part of the message
 		
 		$output .= "--".$bound2.CRLF;
 		$output .= "Content-Type: text/html; charset=".$_Config['bulk']['charset'].CRLF;
-		$output .= "Content-Transfer-Encoding: 7bit".CRLF.CRLF;
+		$output .= "Content-Transfer-Encoding: 7bit".CRLF;
 		$output .= $this->getMessage().CRLF.CRLF;
 
 /*
