@@ -10,7 +10,7 @@ $_Config = Array(
 "mysql" => Array(
 
 ### Server
-"server" => "localhost", // Examples: "localhost", "192.168.3.122", "81.35.68.121", "82.35.58.119:3306"
+"server" => "localhost", // Examples: "localhost", "192.168.3.122", "81.35.68.121:3306", "82.35.58.119:3307"
 
 ### User
 "username" => "seberm",
@@ -52,14 +52,50 @@ $_Config = Array(
 ### Message content type
 "contentType" => "html", // plain X html
 
-### SMTP conf
-"smtp" => Array("server" => "smtp_server_address", // the SMTP server
-				"login" => "login_name",
-				"password" => "smtp_passord",
-				"port" => 25, // server port
-				"timeout" => 30, // server timeout
-				"authType" => "login", // login X plain
-				"smtpType" => "esmtp"), // smtp X esmtp
+
+
+
+### SMTP MAIN CONFIGURATION
+"smtp" => Array(
+
+### Server
+"server" => "smtp.skok.cz",
+
+### Port
+"port" => 25, // Default: 25
+
+### Login
+"login" => "seberm@science-agency.cz",
+
+### Password
+"password" => "mandarinka",
+
+### Server timeout				
+"timeout" => 30,
+
+### Auth type
+"authType" => "login", // login X plain
+
+### SMTP Type
+"smtpType" => "esmtp", // smtp X esmtp
+
+
+
+### The proxy options
+
+### Enable proxy?
+"useProxy" => true, // false X true
+
+### Server
+"proxyServer" => "localhost",
+
+### Port
+"proxyPort" => 9876
+
+
+),
+
+
 
 ### Count of emails which are sent in one batch
 "batch" => 50,
