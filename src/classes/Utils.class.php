@@ -4,6 +4,7 @@
  * @file Utils.class.php
  * @author Otto Sabart <seberm@gmail.com>
  */
+ 
 
 final class Utils { 
 	
@@ -36,6 +37,15 @@ final class Utils {
 			return $result;
 			
 		} else return $string;
+	}
+	
+	
+	public static function escape ($string) {
+
+		global $_MySql;
+		if ($_MySql)
+			return $_MySql->escape_string($string);
+		else throw new BulkException("SQL string is not escaped; exiting ...");
 	}
 	
 }
