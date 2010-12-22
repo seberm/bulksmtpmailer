@@ -3,7 +3,9 @@
  * @author Otto Sabart <seberm@gmail.com>
  */
 
+
 class MySQLi {
+	
 	/** The database server
 	 * @var string $server
 	 */
@@ -55,23 +57,27 @@ class MySQLi {
 	public $insert_id = -1;
 	
 	
-	/** Creates new MySQL instance
+	/** Constructor - creates new MySQL instance
 	 * @param string $server
 	 * @param string $username
 	 * @param string $password
 	 * @param string $database
 	 */
 	function MySQLi ($server, $username, $password, $database) {
+		
 		$this->server = $server;
 		$this->username = $username;
 		$this->password = $password;
 		$this->database = $database;
 		
-		$this->connection = MySQL_Connect($this->server, $this->username, $this->password);
+		$this->connection = Mysql_Connect($this->server
+										  $this->username,
+										  $this->password);
 	
 		if (!$this->connection) {
+			
 			$this->connect_error = MySQL_Error();
-			$this->connect_errno= MySQL_Errno();
+			$this->connect_errno = MySQL_Errno();
 		}
 	}
 
@@ -80,6 +86,7 @@ class MySQLi {
 	 * @return bool
 	 */
 	public function close () {
+		
 		return MySQL_Close($this->connection);
 	}
 	
@@ -89,14 +96,17 @@ class MySQLi {
 	 * @return MySQLiResult
 	 */
 	public function query ($sql) {
+		
 		$res = MySQL_Query($sql, $this->connection);
 		
 		if (!$res) {
+			
 			$this->error = MySQL_Error($this->connection);
 			$this->errno = MySQL_Errno($this->connection);
 			
 			return false;
 		} else {
+			
 			$result = new MySQLi_Result ($res, $this->connection);
 			$this->insertId = mysql_insert_id($this->connection);
 			
@@ -107,6 +117,7 @@ class MySQLi {
 
 
 class MySQLi_Result {
+	
 	private $result;
 	private $connection;
 	public $num_rows;
@@ -118,6 +129,7 @@ class MySQLi_Result {
 	 * @param Mysql link $connection
 	 */
 	function MySQLi_Result ($result, $connection) {
+		
 		$this->result = $result;
 		$this->connection = $connection;
 	
@@ -129,6 +141,7 @@ class MySQLi_Result {
 	 * @return array
 	 */
 	public function fetch_assoc () {
+		
 		return MySQL_Fetch_Assoc($this->result, $this->connection);
 	}
 	
@@ -137,6 +150,7 @@ class MySQLi_Result {
 	 * @return array
 	 */
 	public function fetch_row () {
+		
 		return MySQL_Fetch_Row($this->result, $this->connection);
 	}
 	
@@ -145,6 +159,7 @@ class MySQLi_Result {
 	 * @return array
 	 */
 	public function fetch_array () {
+		
 		return MySQL_Fetch_Array($this->result, $this->connection);
 	}
 }
@@ -154,6 +169,7 @@ class MySQLi_Result {
 
 
 function mysqli_connect($server, $username, $password, $database) {
+	
     return new MySQLi($server, $username, $password, $database);
 }
 
@@ -166,6 +182,7 @@ function mysqli_connect($server, $username, $password, $database) {
  * @return MySQLi_result
  */
 function mysqli_query($link, $query) {
+	
     return $link->query($query);
 }
 
@@ -177,6 +194,7 @@ function mysqli_query($link, $query) {
  * @return bool
  */
 function mysqli_close($link) {
+	
     return $link->close();
 }
 
@@ -188,6 +206,7 @@ function mysqli_close($link) {
  * @return int Returs number of rows
  */
 function mysqli_num_rows($result) {
+	
     return $result->num_rows;
 }
 
@@ -199,6 +218,7 @@ function mysqli_num_rows($result) {
  * @return array
  */
 function mysqli_fetch_assoc($result) {
+	
     return $result->fetch_assoc();
 }
 
@@ -210,6 +230,7 @@ function mysqli_fetch_assoc($result) {
  * @return array
  */
 function mysqli_fetch_row($result) {
+	
     return $result->fetch_row();
 }
 
@@ -221,6 +242,7 @@ function mysqli_fetch_row($result) {
  * @return array
  */
 function mysqli_fetch_array($result) {
+	
     return $result->fetch_array();
 }
 
@@ -231,6 +253,7 @@ function mysqli_fetch_array($result) {
  * @return int
  */
 function mysql_insert_id($link) {
+	
     return $link->insert_id;
 }
 
