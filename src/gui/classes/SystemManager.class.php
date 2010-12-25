@@ -6,7 +6,7 @@ class SystemManager extends AdminModule {
 	
 	function __construct () {
 
-		$this->moduleName = "System manager";
+		$this->moduleName = "System manager - under construction";
 	}
 
 	public function getContent () {
