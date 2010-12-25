@@ -129,7 +129,7 @@ class MailsManager extends AdminModule {
 		
 		global $_MySql;
 
-		$output = "<span class=\"newItem\"><a href=\"?module=".get_class($this)."&amp;action=showForm\"><img src=\"".CURRENT_ROOT."gui/images/tools/add.png\" alt=\"Add\" title=\"Add\" /></a></span>";
+		$output = "<span class=\"newItem\"><a href=\"?module=".get_class($this)."&amp;action=showForm\"><img src=\"".CURRENT_ROOT."gui/images/icons/add.png\" alt=\"Add\" title=\"Add\" /></a></span>";
 		$output .= "<br /><br />";
 		$output .= "<table class=\"listTable\" cellpadding=\"5\" cellspacing=\"0\" border=\"0\">
 						<tr>
@@ -140,10 +140,13 @@ class MailsManager extends AdminModule {
 
 		$sql = "SELECT `id`, `Name`, `Email` FROM `Mail` ORDER BY `id` ASC;";
 		$res = $_MySql->query($sql);
+		
+		if ($res->num_rows == 0)
+			$output .= "<tr><td colspan=\"3\"><div class=\"error\">No mails in database</div></td></tr>";
 
 		while ($row = $res->fetch_assoc()) {
-			$actions = "<a href=\"?module=".get_class($this)."&amp;action=showForm&amp;id=".$row['id']."\"><img src=\"".CURRENT_ROOT."gui/images/tools/edit.png\" title=\"Edit\" alt=\"Edit\" /></a>";
-			$actions .= "<a href=\"?module=".get_class($this)."&amp;action=delete&amp;id=".$row['id']."\"><img src=\"".CURRENT_ROOT."gui/images/tools/remove.png\" title=\"Remove\" alt=\"Remove\" class=\"remove\" /></a>";
+			$actions = "<a href=\"?module=".get_class($this)."&amp;action=showForm&amp;id=".$row['id']."\"><img src=\"".CURRENT_ROOT."gui/images/icons/edit.png\" title=\"Edit\" alt=\"Edit\" /></a>";
+			$actions .= "<a href=\"?module=".get_class($this)."&amp;action=delete&amp;id=".$row['id']."\"><img src=\"".CURRENT_ROOT."gui/images/icons/remove.png\" title=\"Remove\" alt=\"Remove\" /></a>";
 			$output .= "<tr><td>".$row['Name']."</td><td>".$row['Email']."</td><td align=\"center\">".$actions."</td></tr>";
 		}
 
