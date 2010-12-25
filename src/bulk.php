@@ -17,7 +17,7 @@ date_default_timezone_set("Europe/Prague");
 try {
 	// Check the PHP version (>5.0.0)
 	if (!version_compare(phpversion(), "5.0.0", ">="))
-		die("You're using old PHP version - ".PHP_VERSION.".");
+		die("You're using old PHP version - ".PHP_VERSION.". This script needs PHP 5.0.0 or upper.");
 	
 	// Load exceptions
 	if (!defined("DATABASEEXCEPTION"))
@@ -45,43 +45,43 @@ try {
 			(@include_once(CURRENT_ROOT."classes/Bulk.class.php")) or die ("Cannot load Bulk class!");
 		////////////////////////////////////////////////
 			
-		$sqlActive = "	SELECT `Value`
-						FROM `System`
-						WHERE `Item` = 'ActiveSending';";
-		$resActive = $_MySql->query($sqlActive);
-		$rowActive = $resActive->fetch_assoc();
-		$sendingActive = $rowActive['Value'];
+		$sql = "SELECT `id`, `isSending`
+				FROM `Queue`
+				WHERE `isSending` = true AND `isCompleted` = false
+				LIMIT 1;";
+		
+		$res = $_MySql->query($sql);
+
+		// If no queue to send
+		if ($res->num_rows == 0)
+			exit(0);
 	
-	
-		$sqlActiveMessage = "	SELECT `Value`
-								FROM `System`
-								WHERE `Item` = 'SendingMessageID';";
-		$resActiveMessage = $_MySql->query($sqlActiveMessage);
-		$rowActiveMessage = $resActiveMessage->fetch_assoc();
-	
-		$messageId = $rowActiveMessage['Value'];
-	
-		$id = isset($messageId) ? $messageId : 0;
-	
+		$row = $res->fetch_assoc();
+		$queueID = $row['id'];
+
+
+///// @todo - this only for using without GUI
+		//$sendingActive = $row['isSending'];
+
+
+/*
 		if (isset($_GET['id']) && is_numeric($_GET['id'])) {
 			
-			// SQL Injection prevention
-			$id = Utils::escape($_GET['id']);
-			
 			if ($sendingActive === true)
-				throw new BulkException("the BulkMailer is sending right now, please wait...");
+				throw new BulkException("BulkMailer is sending right now, please wait ...");
+				
+			$GETQueueID = isset($_GET['id']) ? intval($_GET['id']) : 0;
 			
-			$sql = "UPDATE `System`
-					SET `Value` = ".$id."
-					WHERE `Item` = 'SendingMessageID';";
-			
-			$_MySql->query($sql);
+			$queueID = Utils::escape($GETQueueID);
 		}
-	
-		if ($id <= 0)
-			throw new BulkException("the message ID does not exist; exiting ...");
-	
-		$bulk = new Bulk($id);
+*/		
+		
+		// If queue ID doesn't exists or is bad, we're exiting normally
+		if ($queueID <= 0)
+			exit(0);
+			//throw new BulkException("queue ID does not exist; exiting ...");
+		
+		$bulk = new Bulk($queueID);
 		
 		// Starts the Bulk
 		$bulk->start();
@@ -89,6 +89,7 @@ try {
 	} catch (BulkException $e) {
 		
 		echo $e->getStack();
+		exit(1);
 	}
 
 } catch (Exception $e) {

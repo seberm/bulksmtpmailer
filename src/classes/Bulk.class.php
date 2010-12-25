@@ -20,6 +20,9 @@ if (!defined("MESSAGE"))
 
 if (!defined("SMTP"))
 	require_once (CURRENT_ROOT."classes/SMTP.class.php");
+	
+if (!defined("QUEUE"))
+	require_once (CURRENT_ROOT."classes/Queue.class.php");
 
 ### Exceptions
 if (!defined("BULKEXCEPTION"))
@@ -33,25 +36,32 @@ class Bulk {
 	
 	private $_mails = Array();
 	
-	/** The pointer to instance of Smtp class
+	/** Pointer to instance of Smtp class
 	 * @var $_Smtp
 	 */
 	private $_Smtp = null;
 	
+	/** Pointer to Queue object
+	 * @var $_Queue
+	 */
+	private $_Queue = null;
+	
+	/** Pointer to mail message
+	 * @var $_Message
+	 */
 	private $_Message = null;
 	
 	
-	
-	function __construct ($messageID) {
+	function __construct ($queueID) {
 		
 		global $_MySql;
 		global $_Config;
 		
 		try {
-			$this->_Message = new Message($messageID);
-		} catch (MessageException $e) {
+			$this->_Queue = new Queue($queueID);
+			$this->_Message = $this->_Queue->getMessage();
+		} catch (QueueException $e) {
 			throw new BulkException($e->getStack());
-			return;
 		}
 	
 		$sqlMails = "SELECT `id` FROM `Mail`
@@ -60,7 +70,7 @@ class Bulk {
 
 		$resMails = $_MySql->query($sqlMails);
 		
-		if (!$resMails->num_rows) {
+		if ($resMails->num_rows == 0) {
 			
 			// Signal stopped is emitted
 			$this->stopped();
@@ -256,8 +266,11 @@ l4P852DMLINVrvOXtNTlyDv5mHfbbzIXnSNFBnnNld5dZT/dIZSOOn0X/sU9Xh0vATAzzwXCZ4GU
 		global $_Config;
 		
 		try {
-			if ($this->_Smtp->connect()) { // Connect to the SMTP server
-				$this->_Smtp->login(); // Login to SMTP server
+			// Connect to the SMTP server
+			if ($this->_Smtp->connect()) {
+			
+				// Login to SMTP server
+				$this->_Smtp->login();
 				foreach ($this->_mails as $mail) {
 					$mailHeader = $this->getHeader($mail->getEmail());
 					$mailBody = $this->getBody();
@@ -269,8 +282,10 @@ l4P852DMLINVrvOXtNTlyDv5mHfbbzIXnSNFBnnNld5dZT/dIZSOOn0X/sU9Xh0vATAzzwXCZ4GU
 				
 				$this->_Smtp->disconnect();
 			} else {
-				// We can send email alternatively, bad it's the bad way. (We can give an error from server)
+				
+				// We can send emails alternatively, bad it's the bad way. (We can get an error from server)
 				foreach ($this->_mails as $mail) {
+					
 					$mailHeaders = "";
 					$mailHeaders .= "From: ".$_Config['bulk']['from'].CRLF;
 					$mailHeaders .= "Reply-To: ".$_Config['bulk']['from'].CRLF;
@@ -280,39 +295,37 @@ l4P852DMLINVrvOXtNTlyDv5mHfbbzIXnSNFBnnNld5dZT/dIZSOOn0X/sU9Xh0vATAzzwXCZ4GU
 				}
 			}
 		} catch (SmtpException $e) {
+			
 			throw new BulkException($e->getStack());
 			return;
 		}
 	}
 	
 	
-	private static function stopped () {
+	private function stopped () {
 		
 		global $_MySql;
+
+		$sql = "UPDATE `Queue`
+				SET `isSending` = false, `isCompleted` = true
+				WHERE `id` = ".$this->_Queue->getID().";";
 		
-		$sql1 = "UPDATE `System`
-				 SET `Value` = false
-				 WHERE `Item` = 'ActiveSending';";
-				
-		$sql2 = "UPDATE `System`
-				 SET `Value` = 0
-				 WHERE `Item` = 'SendingMessageId';";
-				
 		Mail::markUnsent();
 				 
-		return ($_MySql->query($sql1) && $_MySql->query($sql2));
+		return $_MySql->query($sql);
 	}
 	
 	
-	private static function started () {
+	private function started () {
 		
 		global $_MySql;
-		
-		$sql = "UPDATE `System`
-				SET `Value` = true
-				WHERE `Item` = 'ActiveSending';";
+/*
+		$sql = "UPDATE `Queue`
+				SET `isSending` = true
+				WHERE `id` = ".$this->_Queue->getID().";";
 				
 		return $_MySql->query($sql);
+*/
 	}
 	
 	
