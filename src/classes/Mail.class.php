@@ -33,6 +33,10 @@ class Mail {
 					WHERE `id` = ".$mailID.";";
 					
 		$resMail = $_MySql->query($sqlMail);
+		
+		if ($resMail->num_rows == 0)
+			throw new BulkException("Mail (ID: ".$mailID.") does not exist");
+		
 		$rowMail = $resMail->fetch_assoc();
 		
 		$this->_name = $rowMail['Name'];

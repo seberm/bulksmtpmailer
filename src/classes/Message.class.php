@@ -31,14 +31,12 @@ class Message {
 		$sqlMessage = "SELECT `id`, `Subject`, `Text`
 					   FROM `Message`
 					   WHERE `id` = ".$messageID.";";
-		
+
 		$resMessage = $_MySql->query($sqlMessage);
-		if (!$resMessage) {
-			
+
+		if ($resMessage->num_rows == 0)
 			throw new MessageException("Message (ID: ".$messageID.") does not exist");
-			return;
-		}
-		
+
 		$rowMessage = $resMessage->fetch_assoc();
 		
 		
