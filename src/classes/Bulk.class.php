@@ -56,7 +56,10 @@ class Bulk {
 		
 		global $_MySql;
 		global $_Config;
-		
+
+		if ($_Config['system']['gui'])
+			$this->setMySQLConfiguration();
+
 		try {
 			$this->_Queue = new Queue($queueID);
 			$this->_Message = $this->_Queue->getMessage();
@@ -108,6 +111,36 @@ class Bulk {
 	}
 	
 	
+	private function setMySQLConfiguration () {
+		
+		global $_MySql;
+		global $_Config;
+		
+		$sql = "SELECT * FROM `SystemSettings`";
+		$res = $_MySql->query($sql);
+		
+		$_Config['bulk']['smtp'] = Array();
+		while ($row = $res->fetch_assoc()) {
+
+				$item = $row['Item'];
+				$value = is_numeric($row['Value']) ? (int) $row['Value'] : $row['Value'];
+				
+				// If there isn't a configuration in DB.SystemSettings it will use a configuration from the config file (config.inc.php)
+				if (empty($value) || ($value == 0))
+					continue;
+				
+				if (preg_match('/^smtp/', $item)) {
+					
+					$confItem = lcfirst(substr($item, 4));
+					$_Config['bulk']['smtp'][$confItem] = $value;
+				} else {
+					
+					$_Config['bulk'][$item] = $value;
+				}
+		}
+	}
+	
+	
 	public function __toString () {
 		
 		return get_class($this);
@@ -130,7 +163,6 @@ class Bulk {
 		$output .= "X-MSMail-Priority: Normal".CRLF;
 		$output .= "X-Mailer: ".$_Config['bulk']['mailer'].CRLF;
 		$output .= "X-Originating-Email: ".$_Config['bulk']['from'].CRLF;
-		
 		
 		return $output;
 	}
