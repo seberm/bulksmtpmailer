@@ -137,7 +137,7 @@ class MessagesManager extends AdminModule {
 
 		while ($row = $res->fetch_assoc()) {
 			$actions = "<a href=\"?module=".get_class($this)."&amp;action=showForm&amp;id=".$row['id']."\"><img src=\"".CURRENT_ROOT."gui/images/icons/edit.png\" title=\"Edit\" alt=\"Edit\" /></a>";
-			$actions .= "<a href=\"?module=".get_class($this)."&amp;action=delete&amp;id=".$row['id']."\" onClick=\"return confirmation()\"><img src=\"".CURRENT_ROOT."gui/images/icons/remove.png\" title=\"Remove\" alt=\"Remove\" /></a>";
+			$actions .= "<a class=\"remove\" href=\"?module=".get_class($this)."&amp;action=delete&amp;id=".$row['id']."\" onClick=\"return confirmation()\"><img src=\"".CURRENT_ROOT."gui/images/icons/remove.png\" title=\"Remove\" alt=\"Remove\" /></a>";
 			$output .= "<tr><td>".$row['Subject']."</td><td>".Utils::cutString($row['Text'], 40)."</td><td align=\"center\">".$actions."</td></tr>";
 		}
 

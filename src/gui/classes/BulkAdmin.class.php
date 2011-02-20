@@ -152,7 +152,7 @@ class BulkAdmin extends AdminModule {
 
 		while ($row = $res->fetch_assoc()) {
 			
-			$actions = "<a href=\"?module=".get_class($this)."&amp;action=remove&amp;id=".$row['id']."\"><img src=\"".CURRENT_ROOT."gui/images/icons/remove.png\" title=\"Stop & Remove\" alt=\"Stop & Remove\" /></a>";
+			$actions = "<a class=\"remove\" href=\"?module=".get_class($this)."&amp;action=remove&amp;id=".$row['id']."\"><img src=\"".CURRENT_ROOT."gui/images/icons/remove.png\" title=\"Stop & Remove\" alt=\"Stop & Remove\" /></a>";
 			if (!$row['isCompleted'] && !$row['isSending'])
 				$actions .= "<a href=\"?module=".get_class($this)."&amp;action=start&amp;id=".$row['id']."\"><img src=\"".CURRENT_ROOT."gui/images/icons/up.png\" title=\"Start sending\" alt=\"Stop & Remove\" /></a>";
 				
