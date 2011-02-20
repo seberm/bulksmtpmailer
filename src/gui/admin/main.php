@@ -29,12 +29,14 @@ echo "
 	<div id=\"header\"></div>
 	<div id=\"menu\">
 		<span class=\"menuItem\"><a href=\"?module=AdminWelcome\">Home</a></span>
-		<span class=\"menuItem\">---</span>
+		<span class=\"menuItem\"><hr /></span>
 		<span class=\"menuItem\"><a href=\"?module=BulkAdmin\">Bulk administration</a></span>
 		<span class=\"menuItem\"><a href=\"?module=SystemManager\">System manager</a></span>
-		<span class=\"menuItem\">---</span>
+		<span class=\"menuItem\"><hr /></span>
 		<span class=\"menuItem\"><a href=\"?module=MailsManager\">E-mails manager</a></span>
 		<span class=\"menuItem\"><a href=\"?module=MessagesManager\">Messages manager</a></span>
+		<span class=\"menuItem\"><hr /><br /></span>
+		<span class=\"menuItem\"><a href=\"../bulk.php?\" target=\"_blank\"><b>CRON Script</b></a></span>
 	</div>
 	<div id=\"content\">
 		<h1>".$module->moduleName."</h1>

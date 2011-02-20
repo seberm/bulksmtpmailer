@@ -16,6 +16,7 @@ input { /*margin: 5px;*/ }
 #menu { width: 150px; float: left; background: #000; color: #FFF; padding: 10px; margin-bottom: 20px; }
 
 .menuItem { float: left; clear: both; }
+.menuItem hr { width:150px; color:#014685; }
 
 #content { float: left; padding: 10px; margin-bottom: 20px; }
 
@@ -71,7 +72,8 @@ input { /*margin: 5px;*/ }
 	font-size: 15px;
 	border: 1px solid #000000;
 	margin: 10px 0;
-	padding: 5px 0;
+	padding: 5px;
+	width:600px;
 }
 
 .newItem a { color: red; }
@@ -82,3 +84,4 @@ input { /*margin: 5px;*/ }
 	font-size: 25px;
 	font-weight: bold;
 }
+
