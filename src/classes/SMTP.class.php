@@ -80,7 +80,7 @@ class SMTP {
 								554 => "Transaction failed");
 	
 	
-	function __construct ($server, $port, $timeout = TIMEOUT, $authType = AUTHTYPE, $smtpType = SMTPTYPE) {
+	function __construct ($server, $port, $timeout = SMTP_TIMEOUT, $authType = SMTP_AUTHTYPE, $smtpType = SMTP_SMTPTYPE) {
 		
 		$this->_server = $server;
 		$this->_port = is_numeric($port) ? $port : 0;
@@ -106,12 +106,23 @@ class SMTP {
 	}
 	
 	
-/** @todo mozna casem dodelat i dalsi navratove metody..
- */
-	public function getServer () {
-		
-		return $this->_server;
-	}
+	public function getServer () { return $this->_server; }
+	public function getPort () { return $this->_port; }
+	public function getLogin () { return $this->_login; }
+	public function getTimeout () { return $this->_timeout; }
+	public function getProxyServer () { return $this->_proxyServer; }
+	public function getProxyPort () { return $this->_proxyPort; }
+	
+	/** Returns true if we are logged to SMTP server
+	 * @return boolean
+	 */
+	public function isLogged () { return $this->_logged; }
+	
+	
+	/** Returns true if we are connected to SMTP server
+	 * @return boolean
+	 */
+	public function isConnected () { return $this->_connected; }
 	
 	
 	/** Opens a connection to SMTP server
@@ -121,6 +132,7 @@ class SMTP {
 		
 		$server = $this->_server;
 		$port = $this->_port;
+		
 		if ($this->_useProxy) {
 			$server = $this->_proxyServer;
 			$port = $this->_proxyPort;
@@ -157,24 +169,6 @@ class SMTP {
 		$this->_connected = false;
 
 		return fclose($this->_socket);
-	}
-	
-	
-	/** Returns true if we are logged to SMTP server
-	 * @return boolean
-	 */
-	public function isLogged () {
-		
-		return $this->_logged;
-	}
-	
-	
-	/** Returns true if we are connected to SMTP server
-	 * @return boolean
-	 */
-	public function isConnected () {
-		
-		return $this->_connected;
 	}
 	
 	
