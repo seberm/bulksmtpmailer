@@ -22,8 +22,8 @@ if (!defined("UTILS"))
 ### Constants
 $prefix = "SMTP_";
 define ($prefix."TIMEOUT", 30);
-define ($prefix."AUTHTYPE", "login");
-define ($prefix."SMTPTYPE", "smtp");
+define ($prefix."AUTHTYPE", "LOGIN");
+define ($prefix."SMTPTYPE", "SMTP");
 
 if (!defined("CRLF"))
 	define ("CRLF", "\r\n", true);
@@ -31,29 +31,87 @@ if (!defined("CRLF"))
 
 class SMTP {
 	
+	/** Final-server address
+	 * @var string $_server
+	 */
 	private $_server;
+	
+	/** Final-server port
+	 * @var int $_port;
+	 */
 	private $_port;
 	
+	/** Proxy server address
+	 * @var string $_proxyServer
+	 */
 	private $_proxyServer;
+	
+	/** Proxy server port
+	 * @var int $_proxyPort
+	 */
 	private $_proxyPort;
+	
+	/** Indicates if we're using proxy server
+	 * @var boolean $_useProxy
+	 */
 	private $_useProxy = false;
 	
-	private $_authType;
+	/** Contains a server SMTP type
+	 * @var string $_smtpType
+	 */
 	private $_smtpType;
+	
+	/** Contains a authorization type
+	 * @var string $_authType
+	 */
+	private $_authType;
+	
+	/** Connection timeout
+	 * @var int $_timeout
+	 */
 	private $_timeout;
 	
+	/** Contains a SMTP username
+	 * @var string $_login
+	 */
 	private $_login;
+	
+	/** Contains a SMTP password
+	 * @var string $_password
+	 */
 	private $_password;
 	
+	/** Pointer to SMTP socket
+	 * @var socket $_socket
+	 */
 	private $_socket = null;
 	
-	// Is user logged?
+	/** Indicates if user logged
+	 * @var boolean $_logged
+	 */
 	private $_logged = false;
 	
-	// Is connected to the server?
+	/** Indicates if we're connected to the server
+	 * @var boolean $_connected
+	 */
 	private $_connected = false;
 	
-	private $SMTP_RESPONSE = Array(
+	/** An Array of auth types which are supported by server we're connecting to
+	 * @var array $_supportedAuthTypes
+	 */
+	private $_supportedAuthTypes = Array();
+	
+	/** SMTP Auth methods which are supported by this code
+	 * @var array $SMTP_AUTH_TYPES
+	 */
+	private $SMTP_AUTH_TYPES = Array("LOGIN", "PLAIN"/*, "DIGEST-MD5", "CRAM-MD5", "GSSAPI"*/);
+	
+	private $SMTP_TYPES = Array("SMTP", "ESMTP");
+	
+	/** Definition of possible errors
+	 * @var array $SMTP_TYPES
+	 */
+	private $SMTP_RESPONSES = Array(
 								200 => "(nonstandard success response, see rfc876)",
 								211 => "System status, or system help reply",
 								214 => "Help message",
@@ -78,22 +136,30 @@ class SMTP {
 								552 => "Requested mail action aborted: exceeded storage allocation",
 								553 => "Requested action not taken: mailbox name not allowed",
 								554 => "Transaction failed");
+								
 	
-	
-	function __construct ($server, $port, $timeout = SMTP_TIMEOUT, $authType = SMTP_AUTHTYPE, $smtpType = SMTP_SMTPTYPE) {
+	/** Constructor
+	 * @param $server Server we are connecting to
+	 * @param $port Port of the server
+	 * @param $timeout The connection timeout
+	 */
+	function __construct ($server, $port, $timeout = SMTP_TIMEOUT, $authType = SMTP_AUTH_TYPE) {
 		
 		$this->_server = $server;
 		$this->_port = is_numeric($port) ? $port : 0;
 		$this->_timeout = is_numeric($timeout) ? $timeout : 0;
-		$this->_authType = $authType;
-		$this->_smtpType = $smtpType;
+		
+		if (in_array($authType, $this->SMTP_AUTH_TYPES, true))
+			$this->_authType = $authType;
+		else $this->_authType = SMTP_AUTH_TYPE;
+
 	}
 	
 	
+	/** Destructor
+	 * Disconects if we are connected.
+	 */
 	function __destruct () {
-		
-		if (!is_resource($this->_socket))
-			return;
 
 		if ($this->isConnected())
 			$this->disconnect();
@@ -106,12 +172,14 @@ class SMTP {
 	}
 	
 	
+	// GET methods
 	public function getServer () { return $this->_server; }
 	public function getPort () { return $this->_port; }
 	public function getLogin () { return $this->_login; }
 	public function getTimeout () { return $this->_timeout; }
 	public function getProxyServer () { return $this->_proxyServer; }
 	public function getProxyPort () { return $this->_proxyPort; }
+	
 	
 	/** Returns true if we are logged to SMTP server
 	 * @return boolean
@@ -134,6 +202,7 @@ class SMTP {
 		$port = $this->_port;
 		
 		if ($this->_useProxy) {
+			
 			$server = $this->_proxyServer;
 			$port = $this->_proxyPort;
 		}
@@ -141,17 +210,22 @@ class SMTP {
         $this->_socket = @fsockopen($server, $port, $errno, $errstr, $this->_timeout);
 		
 		if (!is_resource($this->_socket)) {
+			
 			throw new SmtpException("failed to open a SMTP connection (".$errno." - ".$errstr.")");
 			return false;
 		}
 		
-		// So,.. we're connected.
+		// So,.. we're connected
 		$this->_connected = true;
 		
-		// It's very important to call getLine function! We must come over the welcome message.
-		$this->getLine();
+		// It's very important to call this function because we must come over the welcome message
+		$this->readLine($this->getLine());
 		
-		return $this->identify();
+		$ret = $this->identify();
+		if (!$ret && $this->isConnected())
+			$this->disconnect();
+		
+		return $ret;
 	}
 	
 	
@@ -167,6 +241,9 @@ class SMTP {
 		
 		// We're disconnected
 		$this->_connected = false;
+		
+		if (!is_resource($this->_socket))
+			return true;
 
 		return fclose($this->_socket);
 	}
@@ -193,6 +270,7 @@ class SMTP {
 	public function setPassword ($password = "") {
 		
 		if (empty($password)) {
+			
 			throw new SmtpException("you're setting an empty password");
 			return;
 		}
@@ -207,17 +285,17 @@ class SMTP {
 	 * @return boolean
 	 */
 	public function execute ($command) {
-		
+
 		$cmd = $command;
 		$cmd .= CRLF;
-
-		if ($this->isConnected())
-			return fwrite($this->_socket, $cmd, strlen($cmd));
-		else {
+echo $cmd;
+		if (!$this->isConnected()) {
 			
 			throw new SmtpException("server is not connected");
 			return false;
 		}
+		
+		return fwrite($this->_socket, $cmd, strlen($cmd));
 	}
 	
 	
@@ -227,38 +305,73 @@ class SMTP {
 	private function getLine () {
 		
 		$line = "";
-		$return = "";
+		$ret = "";
 		
-		if ($this->isConnected()) {
-/** @todo a doupravit: || substr($line, 3, 1) !== " " -> je to divny */
-			while(strpos($return, CRLF) === false || substr($line, 3, 1) !== " ") {
-				$line = fgets($this->_socket, 512);
-				$return .= $line;
-			}
-					
-			if (is_null($return))
-				return false;
+		if (!$this->isConnected()) {
+			
+			throw new SmtpException("server is not connected");
+			return false;
+		}
+			
+/** @todo edit: || substr($line, 3, 1) !== " " -> it's weird */
+
+		while((strpos($ret, CRLF) === false) || substr($line, 3, 1) !== " ") {
+//		while (preg_match("/[a-zA-Z0-9]".CRLF."/", $line)) {
 				
-			return $return;
-		} else throw new SmtpException("server is not connected");
-		
-		return false;
+			$line = fgets($this->_socket, 512);
+			$ret .= $line;
+		}
+					
+		if (empty($ret))
+			return false;
+				
+		return $ret;
 	}
 	
 	
 	/** Reads a line from 0 to $chars chars
 	 * @param string $line
-	 * @param integer $line
-	 * @return boolean or string
+	 * @return integer
 	 */
-	private function readLine ($line, $chars = 3) {
+	private function readLine ($line) {
 		
-		$result = "";
+		if (empty($line))
+			return "";
+
+		// Configuration of SMTP type	
+		if (preg_match("/220\s[\w-.]+\s(?P<opt>\w+)/", $line, $matches)) {
+
+			if (in_array($matches['opt'], $this->SMTP_TYPES, true))
+				$this->_smtpType = $matches['opt'];
+			else $this->_smtpType = SMTP_SMTPTYPE;
+		}
+
+		// Configuration of supported authorization types
+		if (preg_match("/250-(?P<cmd>\w)\s(?P<opt>\w+)/", $line, $matches)) {
+			
+			if (is_null($matches))
+				return 0;
+			
+			switch ($matches['cmd']) {
+				
+				case "AUTH":
+					
+					$this->_supportedAuthTypes = explode(" ", strtoupper($matches['opt']));
+					break;
+					
+				case "SIZE":
+					
+					//$this->_xxx = $matches['opt'];
+					break;
+					
+				case "PIPELINING":
+				case "STARTTLS":
+				default:
+					break;
+			}
+		}
 	
-		if (!empty($line))
-			return substr(trim($line), 0, $chars);
-		
-		return false;
+		return ((int) substr(trim($line), 0, 3));
 	}
 	
 	
@@ -269,10 +382,10 @@ class SMTP {
 	private function getResponseText($key = 0) {
 		
 		$responseText = "";
-		
-		if (array_key_exists($key, $this->SMTP_RESPONSE)) {
+	
+		if (array_key_exists($key, $this->SMTP_RESPONSES)) {
 //! \todo proc bylo tady			
-			$responseText = $this->SMTP_RESPONSE[$key];
+			$responseText = $this->SMTP_RESPONSES[$key];
 //! \todo a tady na konci retezce pridano '\n'
 		} else $responseText = "unknown SMTP response";
 		
@@ -296,50 +409,59 @@ class SMTP {
 		$login = $this->_login;
 		$password = $this->_password;
 		
+/** @todo it's neccessary to programme other autorization methods */
 		switch ($this->_authType) {
-			case "plain":
-/** @todo plain login - nejdrive vse vyzkouset pres telnet..
- */	
+			case "PLAIN":
+			
+				// It's neccessary to keep this syntax: 'username\0username\0password'
+				$log = base64_encode($login."\0".$login."\0".$password);
+				
+				$this->execute("AUTH PLAIN".$log);
+				$responseID = $this->readLine($this->getLine());
+				if ($responseID != 235) {
+					throw new SmtpException($this->getResponseText($responseID));
+					return false;
+				}
+				
+				$this->_logged = true;
+				
 				break;
 			
-			case "login":
+			//case "DIGEST-MD5":
+			//case "CRAM-MD5":
+			//case "GSSAPI":
+			
+			case "LOGIN":
 			default:
 				$loginENC = base64_encode($login);
 				$passwordENC = base64_encode($password);
 				$this->execute("AUTH LOGIN");
-
-/*if ($this->_smtpType == "esmtp") {
-	$responseID = $this->readLine($this->getLine());
-	if ($responseID != 250) {
-		$this->disconnect();
-		
-		throw new SmtpException("The server does not support the given type of an SMTP authenticity");
-		return;
-	}
-	
-	$responseID = (integer) $this->readLine($this->getLine());
-	if ($responseID != 250)
-		throw new SmtpException($this->getResponseText($responseID));
-}*/
+				
 
 				$this->execute($loginENC);
-				$responseID = (integer) $this->readLine($this->getLine());
-				if ($responseID != 334)
+				$responseID = $this->readLine($this->getLine());
+				if ($responseID != 334) {
+					
 					throw new SmtpException($this->getResponseText($responseID));
+					return false;
+				}
 				
 				$this->execute($passwordENC);
-				$responseID = (integer) $this->readLine($this->getLine());
-				if ($responseID != 334)
-					throw new SmtpException($this->getResponseText($responseID));
+				$responseID = $this->readLine($this->getLine());
+				if ($responseID != 334) {
 					
-					
-				$responseID = (integer) $this->readLine($this->getLine());
-				if ($responseID != 235)
 					throw new SmtpException($this->getResponseText($responseID));
-
-/**@todo ... asi se hazi true i kdyz se vyhodi error... coz je spatne..
- */
- $this->_logged = true;		
+					return false;
+				}
+					
+				$responseID = $this->readLine($this->getLine());
+				if ($responseID != 235) {
+					
+					throw new SmtpException($this->getResponseText($responseID));
+					return false;
+				}
+				
+				$this->_logged = true;
  		
 				break;
 		}
@@ -356,7 +478,7 @@ class SMTP {
 		
 		$this->execute("HELO ".$this->_server);
 		
-		$responseID = (integer) $this->readLine($this->getLine());
+		$responseID = $this->readLine($this->getLine());
 		if ($responseID != 250) {
 			
 			throw new SmtpException($this->getResponseText($responseID));
@@ -384,33 +506,31 @@ class SMTP {
 			$server = $this->_proxyServer;
 		
 		$this->execute("EHLO ".$server);
-		$responseID = (integer) $this->readLine($this->getLine());
+		$responseID = $this->readLine($this->getLine());
 
 		if ($responseID != 250) {
 			
 			throw new SmtpException($this->getResponseText($responseID));
-			$this->disconnect();
 			return false;
 		}	
 		
 		return true;
 	}
 	
-	
+
 	private function identify () {
 		
-		$returnStat = false;
-		
 		if (!$this->isConnected())
-			return $returnStat;
-		
+			return false;
+
+		$returnStat = false;
 		switch ($this->_smtpType) {
 			
-			case "esmtp":
+			case "ESMTP":
 				$returnStat = $this->ehlo();
 				break;
 				
-			case "smtp":
+			case "SMTP":
 			default:
 				$returnStat = $this->helo();
 				break;
@@ -424,47 +544,63 @@ class SMTP {
 		
 		$this->execute("QUIT");
 		
-		$responseID = (integer) $this->readLine($this->getLine());
-		if ($responseID != 221)
+		$responseID = $this->readLine($this->getLine());
+		if ($responseID != 221) {
+			
 			throw new SmtpException($this->getResponseText($responseID));
+			return;
+		}
 	}
 	
 	
 	public function send ($recipient, $sender, $body, $header) {
 		
 		if (!$this->isLogged()) {
-			throw new SmtpException("You're not logged.");
+			
+			throw new SmtpException("you're not logged in");
 			return;
 		}
 		
 		if (!Utils::isEmail($recipient)) {
-			throw new SmtpException("Bad email format: ".$recipient);
+			
+			throw new SmtpException("bad email format: ".$recipient);
 			return;
 		}		
 	
 		$this->execute("MAIL FROM:<".$sender.">");
-		$responseID = (integer) $this->readLine($this->getLine());
-		if ($responseID != 250)
-			throw new SmtpException($this->getResponseText($responseID));
+		$responseID = $this->readLine($this->getLine());
+		if ($responseID != 250){
 			
+			throw new SmtpException($this->getResponseText($responseID));
+			return;
+		}
+		
 		$this->execute("RCPT TO:<".$recipient.">");
-		$responseID = (integer) $this->readLine($this->getLine());
-		if ($responseID != 250)
-			throw new SmtpException($this->getResponseText($responseID));
+		$responseID = $this->readLine($this->getLine());
+		if ($responseID != 250) {
 			
+			throw new SmtpException($this->getResponseText($responseID));
+			return;
+		}
 			
 		$this->execute("DATA");
-		$responseID = (integer) $this->readLine($this->getLine());
-		if ($responseID != 354)
-			throw new SmtpException($this->getResponseText($responseID));	
-
+		$responseID = $this->readLine($this->getLine());
+		if ($responseID != 354) {
+			
+			throw new SmtpException($this->getResponseText($responseID));
+			return;
+		}
+		
 		$msg = $header . $body;
 		$this->execute($msg);
 
 		$this->execute(CRLF.".");
-		$responseID = (integer) $this->readLine($this->getLine());
-		if ($responseID != 250)
+		$responseID = $this->readLine($this->getLine());
+		if ($responseID != 250) {
+			
 			throw new SmtpException($this->getResponseText($responseID));
+			return;
+		}
 	
 	}
 	
@@ -477,5 +613,7 @@ class SMTP {
 	}
 }
 
+
 define("SMTP", true, true);
+
 ?> 
