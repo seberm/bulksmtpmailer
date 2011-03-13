@@ -22,17 +22,22 @@
 	
 	$_Error = new Error ();
 	
-	if (!defined("MYSQL")) {
-		(@include_once(CURRENT_ROOT."tools/mysql/mysql.inc.php")) or die ("Cannot load database connection file!");
-	}
+	try {
+		if (!defined("MYSQL")) {
+			(@include_once(CURRENT_ROOT."tools/mysql/mysql.inc.php")) or die ("Cannot load database connection file!");
+		}
+			
+		if (!defined("UTILS"))
+		(@include_once(CURRENT_ROOT."classes/Utils.class.php")) or die ("Cannot load Utils class!");
 		
-	if (!defined("UTILS"))
-    (@include_once(CURRENT_ROOT."classes/Utils.class.php")) or die ("Cannot load Utils class!");
-	
-	if (!defined("CORE"))
-		(@include_once("classes/Core.class.php")) or die ("Cannot load Core class!");
-	$_Core = new Core ();
-	
+		if (!defined("CORE"))
+			(@include_once("classes/Core.class.php")) or die ("Cannot load Core class!");
+		$_Core = new Core ();
+	} catch (Exception $e) {
+		
+		echo $e->getStack();
+		exit(1);
+	}
 	
 	include_once ("admin/main.php");
 ?>
