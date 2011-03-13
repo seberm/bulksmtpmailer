@@ -37,7 +37,7 @@ class Bulk {
 	private $_mails = Array();
 	
 	/** Pointer to instance of Smtp class
-	 * @var $_Smtp
+	 * @var array $_Smtp
 	 */
 	private $_Smtp = null;
 	
@@ -90,8 +90,7 @@ class Bulk {
 		$this->_Smtp = new SMTP($_Config['bulk']['smtp']['server'],
 								$_Config['bulk']['smtp']['port'],
 								$_Config['bulk']['smtp']['timeout'],
-								$_Config['bulk']['smtp']['authType'],
-								$_Config['bulk']['smtp']['smtpType']);
+								$_Config['bulk']['smtp']['authType']);
 		
 		// Checks if the proxy option is enabled
 		if ($_Config['bulk']['smtp']['useProxy'] === true) {
@@ -106,6 +105,7 @@ class Bulk {
 			$this->_Smtp->setLogin($_Config['bulk']['smtp']['login']);
 			$this->_Smtp->setPassword($_Config['bulk']['smtp']['password']);
 		} catch (SmtpException $e) {
+			
 			throw new BulkException($e->getStack());
 		}
 	}

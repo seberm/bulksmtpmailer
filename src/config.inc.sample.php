@@ -66,20 +66,16 @@ $_Config = Array(
 "port" => 25, // Default: 25
 
 ### Login
-"login" => "logintosmtp",
+"login" => "login_to_smtp",
 
 ### Password
-"password" => "passtosmtp",
+"password" => "password_to_smtp",
 
 ### Server timeout				
 "timeout" => 30,
 
 ### Auth type
-"authType" => "login", // login X plain
-
-### SMTP Type
-"smtpType" => "esmtp", // smtp X esmtp
-
+"authType" => "LOGIN", // LOGIN, PLAIN, DIGEST-MD5, CRAM-MD5, GSSAPI
 
 
 ### The proxy options
