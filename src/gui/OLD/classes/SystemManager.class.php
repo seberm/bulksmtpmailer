@@ -6,10 +6,14 @@ class SystemManager extends AdminModule {
 	
 	function __construct () {
 
-		$this->moduleName = "System manager - under construction";
+		$this->moduleName = "System manager";
 	}
 
 	public function getContent () {
+		
+		global $_Config;
+		if (!$_Config['system']['gui'])
+			return "<div class=\"error\">It's not possible to use this module if a <i>gui</i> variable is <i>disabled</i> in your configuration file.</div>";
 		
 		$action = isset($_GET['action']) ? $_GET['action'] : "show";
 
@@ -48,7 +52,13 @@ class SystemManager extends AdminModule {
 			
 			$output .= "<tr>";
 				$output .= "<td>".$row['Name'].":</td>";
-				$output .= "<td><input type=\"text\" name=\"Items[".$row['Item']."]\" value=\"".(isset($row['Value']) ? $row['Value'] : "")."\" /></td>";
+				$output .= "<td>";
+					$output .= "<input type=\"text\" name=\"Items[".$row['Item']."]\" value=\"".(isset($row['Value']) ? $row['Value'] : "")."\" />";
+					
+					if (isset($row['Description']) && !empty($row['Description']))
+						$output .= "<img class=\"help\" title=\"".(isset($row['Description']) ? $row['Description'] : "")."\" src=\"images/icons/help.png\" alt=\"Help\" />";
+						
+				$output .= "</td>";
 			$output .= "</tr>";
 		}
 		

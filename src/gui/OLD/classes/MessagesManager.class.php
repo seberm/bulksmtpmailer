@@ -3,10 +3,12 @@
 include_once("classes/AdminModule.class.php");
 
 class MessagesManager extends AdminModule {
+	
 	function __construct () {
 
 		$this->moduleName = "Messages manager";
 	}
+	
 
 	public function getContent () {
 		$action = isset($_GET['action']) ? $_GET['action'] : "showList";

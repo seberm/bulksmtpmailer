@@ -26,16 +26,18 @@ try {
 	if (!defined("BULKEXCEPTION"))
 		(@include_once(CURRENT_ROOT."exceptions/BulkException.class.php")) or die ("Cannot load BulkException class!");
 	////////////////////////////////////////////////
-		
+	
 	try {	
 		
 		// Load classes
 		try {
+            
 			if (!defined("MYSQL"))
 				(@include_once(CURRENT_ROOT."tools/mysql/mysql.inc.php")) or die ("Cannot load database connection file!");
 		
 			if (!defined("UTILS"))
 				(@include_once(CURRENT_ROOT."classes/Utils.class.php")) or die ("Cannot load Utils class!");
+
 		} catch (DatabaseException $e) {
 			
 			throw new BulkException($e->getStack());
@@ -44,7 +46,7 @@ try {
 		if (!defined("BULK"))
 			(@include_once(CURRENT_ROOT."classes/Bulk.class.php")) or die ("Cannot load Bulk class!");
 		////////////////////////////////////////////////
-			
+		
 		$sql = "SELECT `id`, `isSending`
 				FROM `Queue`
 				WHERE `isSending` = true AND `isCompleted` = false
@@ -75,14 +77,21 @@ try {
 			$queueID = Utils::escape($GETQueueID);
 		}
 */		
-		
+	
 		// If queue ID doesn't exists or is bad, we're exiting normally
 		if ($queueID <= 0)
 			exit(0);
 			//throw new BulkException("queue ID does not exist; exiting ...");
+	
+        
+        $smtp = new SMTP($_Config['bulk']['smtp']['server'],
+				 		 $_Config['bulk']['smtp']['port'],
+						 $_Config['bulk']['smtp']['timeout'],
+						 $_Config['bulk']['smtp']['authType']);
 		
-		$bulk = new Bulk($queueID);
-		
+        // Bulk uses DI model
+		$bulk = new Bulk(new Queue($queueID), $smtp, $_Config);
+	
 		// Starts the Bulk
 		$bulk->start();
 			

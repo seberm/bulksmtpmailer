@@ -37,39 +37,37 @@ class Bulk {
 	private $_mails = Array();
 	
 	/** Pointer to instance of Smtp class
-	 * @var array $_Smtp
+	 * @var SMTP $_Smtp
 	 */
 	private $_Smtp = null;
 	
 	/** Pointer to Queue object
-	 * @var $_Queue
+	 * @var Queue $_Queue
 	 */
 	private $_Queue = null;
 	
 	/** Pointer to mail message
-	 * @var $_Message
+	 * @var Message $_Message
 	 */
 	private $_Message = null;
 	
+private $_config = array();
 	
-	function __construct ($queueID) {
+	public function __construct ($queue, $smtp, $options) {
 		
 		global $_MySql;
-		global $_Config;
+        $this->_config = $options;
 
-		if ($_Config['system']['gui'])
-			$this->setMySQLConfiguration();
+		if ($this->_config['system']['gui'])
+			$this->setMySQLconfiguration();
 
-		try {
-			$this->_Queue = new Queue($queueID);
-			$this->_Message = $this->_Queue->getMessage();
-		} catch (QueueException $e) {
-			throw new BulkException($e->getStack());
-		}
-	
+		$this->_Queue = $queue;
+		$this->_Message = $this->_Queue->getMessage();
+        $this->_Smtp = $smtp;
+
 		$sqlMails = "SELECT `id` FROM `Mail`
 					 WHERE `Sent` = false
-					 LIMIT 0, ".$_Config['bulk']['batch'].";";
+					 LIMIT 0, ".$this->_config['bulk']['batch'].";";
 
 		$resMails = $_MySql->query($sqlMails);
 		
@@ -78,32 +76,24 @@ class Bulk {
 			// Signal stopped is emitted
 			$this->stopped();
 			
-			throw new BulkException("No mails to send in database");
-			return;
+			throw new BulkException("no mails to send in database");
 		}
 			
 		while ($rowMail = $resMails->fetch_assoc())
 			$this->_mails[] = new Mail ($rowMail['id']);
-		
-		
-		// Initialize SMTP server
-		$this->_Smtp = new SMTP($_Config['bulk']['smtp']['server'],
-								$_Config['bulk']['smtp']['port'],
-								$_Config['bulk']['smtp']['timeout'],
-								$_Config['bulk']['smtp']['authType']);
-		
-		// Checks if the proxy option is enabled
-		if ($_Config['bulk']['smtp']['useProxy'] === true) {
+
+        // Checks if the proxy option is enabled
+		if ($this->_config['bulk']['smtp']['useProxy'] === true) {
 			
-			$server = $_Config['bulk']['smtp']['proxyServer'];
-			$port = $_Config['bulk']['smtp']['proxyPort'];
+			$server = $this->_config['bulk']['smtp']['proxyServer'];
+			$port = $this->_config['bulk']['smtp']['proxyPort'];
 			$this->_Smtp->useProxy($server, $port);
 		}
 								
 		try {
 			
-			$this->_Smtp->setLogin($_Config['bulk']['smtp']['login']);
-			$this->_Smtp->setPassword($_Config['bulk']['smtp']['password']);
+			$this->_Smtp->setLogin($this->_config['bulk']['smtp']['login']);
+			$this->_Smtp->setPassword($this->_config['bulk']['smtp']['password']);
 		} catch (SmtpException $e) {
 			
 			throw new BulkException($e->getStack());
@@ -114,12 +104,11 @@ class Bulk {
 	private function setMySQLConfiguration () {
 		
 		global $_MySql;
-		global $_Config;
 		
 		$sql = "SELECT * FROM `SystemSettings`";
 		$res = $_MySql->query($sql);
 		
-		$_Config['bulk']['smtp'] = Array();
+		$this->_config['bulk']['smtp'] = Array();
 		while ($row = $res->fetch_assoc()) {
 
 				$item = $row['Item'];
@@ -132,10 +121,10 @@ class Bulk {
 				if (preg_match('/^smtp/', $item)) {
 					
 					$confItem = lcfirst(substr($item, 4));
-					$_Config['bulk']['smtp'][$confItem] = $value;
+					$_config['bulk']['smtp'][$confItem] = $value;
 				} else {
 					
-					$_Config['bulk'][$item] = $value;
+					$_config['bulk'][$item] = $value;
 				}
 		}
 	}
@@ -149,20 +138,20 @@ class Bulk {
 	
 	private function getHeader ($recipient) {
 		
-		global $_Config;
+		global $_config;
 		$output = "";
 		
-		$output .= "Message-Id: <".md5(@uniqid())."@".$_Config['bulk']['bound'].CRLF.">";
+		$output .= "Message-Id: <".md5(@uniqid())."@".$_config['bulk']['bound'].CRLF.">";
 		$output .= "Date: ".Date(DATE_RFC822).CRLF;
-		$output .= "From: <".$_Config['bulk']['from'].">".CRLF;
-		$output .= "Reply-To: ".$_Config['bulk']['from'].CRLF;
+		$output .= "From: <".$_config['bulk']['from'].">".CRLF;
+		$output .= "Reply-To: ".$_config['bulk']['from'].CRLF;
 		$output .= "MIME-Version: 1.0".CRLF;
 		$output .= "To: ".$recipient.CRLF;
 		$output .= "Subject: ".$this->_Message->getSubject().CRLF;
 		$output .= "X-Priority: 3".CRLF;
 		$output .= "X-MSMail-Priority: Normal".CRLF;
-		$output .= "X-Mailer: ".$_Config['bulk']['mailer'].CRLF;
-		$output .= "X-Originating-Email: ".$_Config['bulk']['from'].CRLF;
+		$output .= "X-Mailer: ".$_config['bulk']['mailer'].CRLF;
+		$output .= "X-Originating-Email: ".$_config['bulk']['from'].CRLF;
 		
 		return $output;
 	}
@@ -170,29 +159,27 @@ class Bulk {
 
 	private function getBody () {
 		
-		global $_Config;
 		$output = "";
-	
 		
-$bound = $_Config['bulk']['bound'].time();
+        $bound = $this->_config['bulk']['bound'].time();
 		///// toto je plain text kus zpravy
 		$output .= "Content-Type: multipart/alternative; boundary=\"".$bound."\"".CRLF;
 
 		$output .= "This is a multi-part message in MIME format.".CRLF;
 		$output .= "--".$bound.CRLF;
-		$output .= "Content-Type: text/plain; charset=".$_Config['bulk']['charset'].CRLF;
+		$output .= "Content-Type: text/plain; charset=".$this->_config['bulk']['charset'].CRLF;
 		$output .= "Content-Transfer-Encoding: 7bit".CRLF;
 		
 		$output .= "Zapnete zobrazovani obrazku.".CRLF;
 		$output .= "--".$bound.CRLF;
 				
-$bound2 = $_Config['bulk']['bound'].(time() + 5);
+        $bound2 = $this->_config['bulk']['bound'].(time() + 5);
 		$output .= "Content-Type: multipart/related; boundary=\"".$bound2."\"".CRLF;
 
 ///// this is the HTML part of the message
 		
 		$output .= "--".$bound2.CRLF;
-		$output .= "Content-Type: text/html; charset=".$_Config['bulk']['charset'].CRLF;
+		$output .= "Content-Type: text/html; charset=".$this->_config['bulk']['charset'].CRLF;
 		$output .= "Content-Transfer-Encoding: 7bit".CRLF;
 		$output .= $this->getMessage().CRLF.CRLF;
 
@@ -272,13 +259,13 @@ l4P852DMLINVrvOXtNTlyDv5mHfbbzIXnSNFBnnNld5dZT/dIZSOOn0X/sU9Xh0vATAzzwXCZ4GU
 	
 	public function getMessage() {
 		
-		global $_Config;
+		global $_config;
 		$output = "";
 		
 		$output .= "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">";
 		$output .= "<html>";
 		$output .= "<head>";
-		$output .= "<meta http-equiv=\"content-type\" content=text/html; charset=".$_Config['bulk']['charset']."\">";
+		$output .= "<meta http-equiv=\"content-type\" content=text/html; charset=".$_config['bulk']['charset']."\">";
 		$output .= "</head>";
 		$output .= "<body>";
 
@@ -295,8 +282,6 @@ l4P852DMLINVrvOXtNTlyDv5mHfbbzIXnSNFBnnNld5dZT/dIZSOOn0X/sU9Xh0vATAzzwXCZ4GU
 	
 	public function sendBatch () {
 		
-		global $_Config;
-		
 		try {
 			// Connect to the SMTP server
 			if ($this->_Smtp->connect()) {
@@ -307,7 +292,7 @@ l4P852DMLINVrvOXtNTlyDv5mHfbbzIXnSNFBnnNld5dZT/dIZSOOn0X/sU9Xh0vATAzzwXCZ4GU
 					$mailHeader = $this->getHeader($mail->getEmail());
 					$mailBody = $this->getBody();
 					
-					$this->_Smtp->send($mail->getEmail(), $_Config['bulk']['from'], $mailBody, $mailHeader);
+					$this->_Smtp->send($mail->getEmail(), $this->_config['bulk']['from'], $mailBody, $mailHeader);
 				}	
 				
 				Mail::markSent($this->_mails);
@@ -319,9 +304,9 @@ l4P852DMLINVrvOXtNTlyDv5mHfbbzIXnSNFBnnNld5dZT/dIZSOOn0X/sU9Xh0vATAzzwXCZ4GU
 				foreach ($this->_mails as $mail) {
 					
 					$mailHeaders = "";
-					$mailHeaders .= "From: ".$_Config['bulk']['from'].CRLF;
-					$mailHeaders .= "Reply-To: ".$_Config['bulk']['from'].CRLF;
-					$mailHeaders .= "X-Mailer: ".$_Config['bulk']['mailer'].CRLF;
+					$mailHeaders .= "From: ".$_config['bulk']['from'].CRLF;
+					$mailHeaders .= "Reply-To: ".$_config['bulk']['from'].CRLF;
+					$mailHeaders .= "X-Mailer: ".$_config['bulk']['mailer'].CRLF;
 					
 					mail($mail->getEmail(), $this->_Message->getSubject(), $this->_Message->getText(), $mailHeaders);
 				}

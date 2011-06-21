@@ -15,7 +15,7 @@ echo "
 <html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"cs\" lang=\"cs\">
 	<head>
 		<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />
-		<meta name=\"author\" content=\"Sabart Otto; seberm@gmail.com - www.seberm.homelinux.org\" />
+		<meta name=\"author\" content=\"Sabart Otto; seberm@gmail.com - www.seberm.com\" />
 		<meta name=\"generator\" content=\"Geany\" />
 		<meta name=\"robots\" content=\"noindex, nofollow\" />
 		<link rel=\"stylesheet\" type=\"text/css\" href=\"css/admin.css\" />
@@ -42,7 +42,7 @@ echo "
 		<h1>".$module->moduleName."</h1>
 		<div id=\"moduleContent\">".$module->getContent()."</div>
 	</div>
-	<div id=\"footer\">Powered by <a href=\"http://www.seberm.homelinux.org\">BulkSMTPMailer</a> ".Date("Y")."</div>
+	<div id=\"footer\">Powered by <a href=\"http://www.seberm.com\">BulkSMTPMailer</a> ".Date("Y")."</div>
 </div>
 </body>
 </html>

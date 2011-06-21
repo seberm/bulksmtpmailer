@@ -209,11 +209,8 @@ class SMTP {
 		
         $this->_socket = @fsockopen($server, $port, $errno, $errstr, $this->_timeout);
 		
-		if (!is_resource($this->_socket)) {
-			
+		if (!is_resource($this->_socket))
 			throw new SmtpException("failed to open a SMTP connection (".$errno." - ".$errstr.")");
-			return false;
-		}
 		
 		// So,.. we're connected
 		$this->_connected = true;
@@ -254,11 +251,8 @@ class SMTP {
 	 */
 	public function setLogin ($login = "") {
 		
-		if (empty($login)) {
-			
+		if (empty($login))
 			throw new SmtpException("you're setting an empty login");
-			return;
-		}
 		
 		$this->_login = $login;
 	}
@@ -269,11 +263,8 @@ class SMTP {
 	 */
 	public function setPassword ($password = "") {
 		
-		if (empty($password)) {
-			
+		if (empty($password))
 			throw new SmtpException("you're setting an empty password");
-			return;
-		}
 		
 		$this->_password = $password;
 	}
@@ -288,12 +279,9 @@ class SMTP {
 
 		$cmd = $command;
 		$cmd .= CRLF;
-echo $cmd;
-		if (!$this->isConnected()) {
-			
+
+		if (!$this->isConnected())
 			throw new SmtpException("server is not connected");
-			return false;
-		}
 		
 		return fwrite($this->_socket, $cmd, strlen($cmd));
 	}
@@ -307,11 +295,8 @@ echo $cmd;
 		$line = "";
 		$ret = "";
 		
-		if (!$this->isConnected()) {
-			
+		if (!$this->isConnected())
 			throw new SmtpException("server is not connected");
-			return false;
-		}
 			
 /** @todo edit: || substr($line, 3, 1) !== " " -> it's weird */
 
@@ -363,7 +348,10 @@ echo $cmd;
 					
 					//$this->_xxx = $matches['opt'];
 					break;
-					
+				
+				case "VRFY":
+				case "ETRN":
+				case "XVERP":
 				case "PIPELINING":
 				case "STARTTLS":
 				default:
@@ -383,11 +371,10 @@ echo $cmd;
 		
 		$responseText = "";
 	
-		if (array_key_exists($key, $this->SMTP_RESPONSES)) {
-//! \todo proc bylo tady			
+		if (array_key_exists($key, $this->SMTP_RESPONSES))
 			$responseText = $this->SMTP_RESPONSES[$key];
-//! \todo a tady na konci retezce pridano '\n'
-		} else $responseText = "unknown SMTP response";
+		else
+			$responseText = "unknown SMTP response";
 		
 		
 		return $responseText;
@@ -400,11 +387,8 @@ echo $cmd;
 	 */
 	public function login () {
 		
-		if (!$this->isConnected()) {
-			
+		if (!$this->isConnected())
 			throw new SmtpException("server is not connected");
-			return;
-		}
 	
 		$login = $this->_login;
 		$password = $this->_password;
@@ -418,10 +402,8 @@ echo $cmd;
 				
 				$this->execute("AUTH PLAIN".$log);
 				$responseID = $this->readLine($this->getLine());
-				if ($responseID != 235) {
+				if ($responseID != 235)
 					throw new SmtpException($this->getResponseText($responseID));
-					return false;
-				}
 				
 				$this->_logged = true;
 				
@@ -436,30 +418,20 @@ echo $cmd;
 				$loginENC = base64_encode($login);
 				$passwordENC = base64_encode($password);
 				$this->execute("AUTH LOGIN");
-				
 
 				$this->execute($loginENC);
 				$responseID = $this->readLine($this->getLine());
-				if ($responseID != 334) {
-					
+				if ($responseID != 334)
 					throw new SmtpException($this->getResponseText($responseID));
-					return false;
-				}
 				
 				$this->execute($passwordENC);
 				$responseID = $this->readLine($this->getLine());
-				if ($responseID != 334) {
-					
+				if ($responseID != 334)
 					throw new SmtpException($this->getResponseText($responseID));
-					return false;
-				}
 					
 				$responseID = $this->readLine($this->getLine());
-				if ($responseID != 235) {
-					
+				if ($responseID != 235)
 					throw new SmtpException($this->getResponseText($responseID));
-					return false;
-				}
 				
 				$this->_logged = true;
  		
@@ -479,12 +451,9 @@ echo $cmd;
 		$this->execute("HELO ".$this->_server);
 		
 		$responseID = $this->readLine($this->getLine());
-		if ($responseID != 250) {
-			
+		if ($responseID != 250)
 			throw new SmtpException($this->getResponseText($responseID));
 			$this->disconnect();
-			return false;
-		}
 		
 		return true;
 	}
@@ -498,7 +467,6 @@ echo $cmd;
 		if (!$this->isConnected())
 			return false;
 		
-		
 		$server = $this->_server;
 		
 		// Are we using the proxy?
@@ -508,11 +476,8 @@ echo $cmd;
 		$this->execute("EHLO ".$server);
 		$responseID = $this->readLine($this->getLine());
 
-		if ($responseID != 250) {
-			
+		if ($responseID != 250)
 			throw new SmtpException($this->getResponseText($responseID));
-			return false;
-		}	
 		
 		return true;
 	}
@@ -545,62 +510,41 @@ echo $cmd;
 		$this->execute("QUIT");
 		
 		$responseID = $this->readLine($this->getLine());
-		if ($responseID != 221) {
-			
+		if ($responseID != 221)
 			throw new SmtpException($this->getResponseText($responseID));
-			return;
-		}
 	}
 	
 	
 	public function send ($recipient, $sender, $body, $header) {
 		
-		if (!$this->isLogged()) {
-			
+		if (!$this->isLogged())
 			throw new SmtpException("you're not logged in");
-			return;
-		}
 		
-		if (!Utils::isEmail($recipient)) {
-			
+		if (!Utils::isEmail($recipient))
 			throw new SmtpException("bad email format: ".$recipient);
-			return;
-		}		
 	
 		$this->execute("MAIL FROM:<".$sender.">");
 		$responseID = $this->readLine($this->getLine());
-		if ($responseID != 250){
-			
+		if ($responseID != 250)
 			throw new SmtpException($this->getResponseText($responseID));
-			return;
-		}
 		
 		$this->execute("RCPT TO:<".$recipient.">");
 		$responseID = $this->readLine($this->getLine());
-		if ($responseID != 250) {
-			
+		if ($responseID != 250)
 			throw new SmtpException($this->getResponseText($responseID));
-			return;
-		}
 			
 		$this->execute("DATA");
 		$responseID = $this->readLine($this->getLine());
-		if ($responseID != 354) {
-			
+		if ($responseID != 354)
 			throw new SmtpException($this->getResponseText($responseID));
-			return;
-		}
 		
 		$msg = $header . $body;
 		$this->execute($msg);
 
 		$this->execute(CRLF.".");
 		$responseID = $this->readLine($this->getLine());
-		if ($responseID != 250) {
-			
+		if ($responseID != 250)
 			throw new SmtpException($this->getResponseText($responseID));
-			return;
-		}
 	
 	}
 	

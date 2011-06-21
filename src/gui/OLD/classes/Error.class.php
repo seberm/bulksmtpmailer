@@ -36,7 +36,9 @@ class Error {
 	 * @return bool
 	 */
 	public function reset () {
+		
 		if (!empty($this->errors)) {
+			
 			//unset ($this->errors);
 			$this->errors = Array ();
 		}
