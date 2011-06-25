@@ -36,7 +36,7 @@ class Queue {
 		if (!is_numeric($queueID))
 			$queueID = 0;
 		
-		$sql = "SELECT `id`, `Name`, `MessageID`, `isSending`, `isCompleted`
+		$sql = "SELECT `id`, `name`, `messageID`, `isSending`, `isCompleted`
 				FROM `Queue`
 				WHERE `id` = ".$queueID.";";
 
@@ -48,12 +48,12 @@ class Queue {
 		$row = $res->fetch_assoc();
 		
 		$this->_id = $row['id'];
-		$this->_name = $row['Name'];
+		$this->_name = $row['name'];
 		$this->_sending = $row['isSending'];
 		$this->_completed = $row['isCompleted'];
 		
 		try {
-			$this->_Message = new Message($row['MessageID']);
+			$this->_Message = new Message($row['messageID']);
 		} catch (MessageException $e) {
 			throw new QueueException($e->getStack());
 		}

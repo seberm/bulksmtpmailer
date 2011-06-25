@@ -29,7 +29,7 @@ class Mail {
 		if (!is_numeric($mailID))
 			$mailID = 0;
 		
-		$sqlMail = "SELECT `id`, `Name`, `Email` FROM `Mail`
+		$sqlMail = "SELECT `id`, `name`, `email` FROM `Mail`
 					WHERE `id` = ".$mailID.";";
 					
 		$resMail = $_MySql->query($sqlMail);
@@ -39,8 +39,8 @@ class Mail {
 		
 		$rowMail = $resMail->fetch_assoc();
 		
-		$this->_name = $rowMail['Name'];
-		$this->_email = $rowMail['Email'];
+		$this->_name = $rowMail['name'];
+		$this->_email = $rowMail['email'];
 		$this->_id = $rowMail['id'];
 	}
 	
@@ -87,7 +87,7 @@ class Mail {
 		$this->_email = $_MySql->escape_string($email);
 		
 		$sqlUp = "UPDATE `Mail`
-				  SET `Name` = '".$this->_name."', `Email` = '".$this->_email."'
+				  SET `name` = '".$this->_name."', `email` = '".$this->_email."'
 				  WHERE `id` = ".$this->_id.";";
 		
 		return $_MySql->query($sqlUp);
@@ -120,7 +120,7 @@ class Mail {
 		$name = $_MySql->escape_string($name);
 		$email = $_MySql->escape_string($email);
 		
-		$sqlAdd = "INSERT INTO `Mail` (`Name`, `Email`)
+		$sqlAdd = "INSERT INTO `Mail` (`name`, `email`)
 				   VALUES ('".$name."', '".$email."');";
 				   
 		return $_MySql->query($sqlAdd);
@@ -136,7 +136,7 @@ class Mail {
 			$ids[] = $mail->getId();
 			
 		$sqlUp = "UPDATE `Mail`
-				  SET `Sent` = true
+				  SET `sent` = true
 				  WHERE `id` IN (".implode(",", $ids).");";
 		
 		return $_MySql->query($sqlUp);
@@ -148,7 +148,7 @@ class Mail {
 		global $_MySql;
 		
 		$sql = "UPDATE `Mail`
-				SET `Sent` = false;";
+				SET `sent` = false;";
 		
 		return $_MySql->query($sql);
 	}

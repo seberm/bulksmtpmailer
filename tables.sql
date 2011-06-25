@@ -1,31 +1,31 @@
 CREATE TABLE IF NOT EXISTS 	`Mail` (
 	`id` bigint(10) unsigned NOT NULL AUTO_INCREMENT,
-	`Name` varchar(150) COLLATE utf8_czech_ci NOT NULL,
-	`Email` varchar(150) COLLATE utf8_czech_ci NOT NULL,
-	`Sent` bool default false,
+	`name` varchar(150) COLLATE utf8_czech_ci NOT NULL,
+	`email` varchar(150) COLLATE utf8_czech_ci NOT NULL,
+	`sent` bool default false,
 	PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 
-INSERT INTO `Mail` (`Name`, `Email`) VALUES
+INSERT INTO `Mail` (`name`, `email`) VALUES
 ('Otto Sabart', 'seberm@gmail.com'),
 ('Otto Sabart', 'seberm@gmail.com');
 
 
 CREATE TABLE IF NOT EXISTS 	`Message` (
 	`id` bigint(10) unsigned NOT NULL AUTO_INCREMENT,
-	`Subject` varchar(100) COLLATE utf8_czech_ci NOT NULL,
-	`Text` text COLLATE utf8_czech_ci NOT NULL,
+	`subject` varchar(100) COLLATE utf8_czech_ci NOT NULL,
+	`text` text COLLATE utf8_czech_ci NOT NULL,
 	PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
-INSERT INTO `Message` (`Subject`, `Text`) VALUES
+INSERT INTO `Message` (`subject`, `text`) VALUES
 ('Zkusebni email', '<b>The test e-mail message</b><br><br>ěšččřřžžýýáííégšřť');
 
 
 CREATE TABLE IF NOT EXISTS 	`Queue` (
 	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-	`Name` varchar(100) COLLATE utf8_czech_ci NOT NULL,
+	`name` varchar(100) COLLATE utf8_czech_ci NOT NULL,
 	`messageID` int(10) unsigned NOT NULL,
 	`isSending` bool default false,
 	`isCompleted` bool default false,
@@ -33,17 +33,28 @@ CREATE TABLE IF NOT EXISTS 	`Queue` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 
+CREATE TABLE `Users` (
+  `id` INTEGER(11) NOT NULL AUTO_INCREMENT,
+  `login` VARCHAR(50) NOT NULL,
+  `realName` VARCHAR(200) NOT NULL,
+  `password` VARCHAR(100) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+INSERT INTO `Users` (`login`, `realName`, `password`) VALUES
+('seberm', 'Sabart Otto', 'f78f4014da74ae989e0362c266c66ee86e95693c');
+
 
 /* GUI tables */
 CREATE TABLE IF NOT EXISTS 	`SystemSettings` (
-	`Item` varchar(50) COLLATE utf8_czech_ci NOT NULL,
-	`Value` varchar(100) COLLATE utf8_czech_ci NOT NULL,
-	`Name` varchar(50) COLLATE utf8_czech_ci NOT NULL,
-	`Description` text COLLATE utf8_czech_ci NOT NULL,
+	`item` varchar(50) COLLATE utf8_czech_ci NOT NULL,
+	`value` varchar(100) COLLATE utf8_czech_ci NOT NULL,
+	`name` varchar(50) COLLATE utf8_czech_ci NOT NULL,
+	`description` text COLLATE utf8_czech_ci NOT NULL,
 	UNIQUE KEY (`Item`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
-INSERT INTO `SystemSettings` (`Item`, `Value`, `Name`, `Description`) VALUES
+INSERT INTO `SystemSettings` (`item`, `value`, `name`, `description`) VALUES
 ('bound', 'science-agency.cz', 'Boundary', ''),
 ('mailer', 'phpSMTPBulk', 'Mailer identification', ''),
 ('charset', 'utf-8', 'Charset', 'Fill a charset you want to use'),

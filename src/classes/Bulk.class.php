@@ -66,7 +66,7 @@ private $_config = array();
         $this->_Smtp = $smtp;
 
 		$sqlMails = "SELECT `id` FROM `Mail`
-					 WHERE `Sent` = false
+					 WHERE `sent` = false
 					 LIMIT 0, ".$this->_config['bulk']['batch'].";";
 
 		$resMails = $_MySql->query($sqlMails);
@@ -111,8 +111,8 @@ private $_config = array();
 		$this->_config['bulk']['smtp'] = Array();
 		while ($row = $res->fetch_assoc()) {
 
-				$item = $row['Item'];
-				$value = is_numeric($row['Value']) ? (int) $row['Value'] : $row['Value'];
+				$item = $row['item'];
+				$value = is_numeric($row['value']) ? (int) $row['value'] : $row['value'];
 				
 				// If there isn't a configuration in DB.SystemSettings it will use a configuration from the config file (config.inc.php)
 				if (empty($value) || ($value == 0))

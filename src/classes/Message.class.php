@@ -28,7 +28,7 @@ class Message {
 		
 		global $_MySql;
 		
-		$sqlMessage = "SELECT `id`, `Subject`, `Text`
+		$sqlMessage = "SELECT `id`, `subject`, `text`
 					   FROM `Message`
 					   WHERE `id` = ".$messageID.";";
 
@@ -40,8 +40,8 @@ class Message {
 		$rowMessage = $resMessage->fetch_assoc();
 		
 		
-		$this->_subject = $rowMessage['Subject'];
-		$this->_text = $rowMessage['Text'];
+		$this->_subject = $rowMessage['subject'];
+		$this->_text = $rowMessage['text'];
 		$this->_id = $rowMessage['id'];
 	}
 	
