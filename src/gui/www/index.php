@@ -18,5 +18,8 @@ define('LIBS_DIR', WWW_DIR . '/../libs');
 // absolute filesystem path to the temporary files
 define('TEMP_DIR', WWW_DIR . '/../temp');
 
+
+define('CRON_SCRIPT_URI', "");
+
 // load bootstrap file
 require APP_DIR . '/bootstrap.php';

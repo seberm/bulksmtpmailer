@@ -1,0 +1,51 @@
+{block content}
+
+<span class="newItem">
+    <a href="{plink BulkAdmin:queue}">
+        <img src="{$basePath}/images/icons/add.png" alt="Add" title="Add" />
+    </a>
+</span>
+<br /><br />
+    
+{if $queues}
+<table class="listTable" cellpadding="5" cellspacing="0" border="0">
+    <tr>
+        <th>{_'Name'}</th>
+        <th>{_'Is sending'}</th>
+        <th>{_'Is completely sent'}</th>
+        <th>{_'Action'}</th>
+</tr>
+
+{foreach $queues as $queue}
+<tr>
+    <td>{$queue->name}</td>
+    <td align="center">
+        {if $queue->isSending}
+        <img src="{$basePath}/images/icons/loader.gif" title="{_'Sending'} ..." alt="Sending" />
+        {else}    
+        <strong>X</strong>
+        {/if}
+    </td>
+    <td align="center">
+        {if $queue->isCompleted}
+        <img src="{$basePath}/images/icons/checked.png" title="{_'Sent'}" alt="Sent" />
+        {else}
+        <strong>X</strong>
+        {/if}
+    </td>
+    <td align="center">
+        <a href="{plink RemoveQueue!, $queue->id}">
+            <img src="{$basePath}/images/icons/remove.png" title="{_'Stop & Remove'}" alt="Stop & Remove" />
+        </a>
+
+        {if !$queue->isCompleted && !$queue->isSending}
+        <a href="{plink StartSending!, $queue->id}">
+            <img src="{$basePath}/images/icons/up.png" title="{_'Start sending'}" alt="Stop & Remove" />
+        </a>        
+        {/if}
+    </td>
+</tr>
+{/foreach}
+</table>
+{/if}
+{/block}

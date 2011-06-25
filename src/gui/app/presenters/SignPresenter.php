@@ -15,7 +15,7 @@ final class SignPresenter extends BasePresenter {
         if ($this->getUser()->isLoggedIn()) {
             
             $this->flashMessage("Already logged in.");
-            $this->redirect("Admin:");
+            $this->redirect("Main:");
         }
     }
 
@@ -23,20 +23,21 @@ final class SignPresenter extends BasePresenter {
     protected function createComponentSignInForm() {
 
 		$form = new AppForm;
-        $form->addGroup("Web administration");
-		$form->addText('username', 'Username:')
-			->setRequired('Please provide a username.');
+        $form->addGroup(tr("Administration"));
+		$form->addText('username', tr("Username:"))
+			->setRequired(tr("Please provide a username"));
 
-		$form->addPassword('password', 'Password:')
-			->setRequired('Please provide a password.');
+		$form->addPassword('password', tr("Password:"))
+			->setRequired(tr("Please provide a password"));
 
-		$form->addCheckbox('remember', 'Remember me on this computer');
+		$form->addCheckbox('remember', tr("Remember me on this computer"));
 
-        $form->addHidden('redirectKey', $this->getParam('backlink'));
+        $form->addHidden('redirectKey', $this->getParam("backlink"));
 
-		$form->addSubmit('send', 'Sign in');
+		$form->addSubmit('send', tr("Sign in"));
 
 		$form->onSubmit[] = callback($this, 'signInFormSubmitted');
+        
 		return $form;
 	}
 
@@ -54,13 +55,13 @@ final class SignPresenter extends BasePresenter {
 				$this->getUser()->setExpiration('+ 20 minutes', true);
 
 		    $this->getUser()->login($values->username, $values->password);
-            $this->flashMessage("You've signed in.");
+            $this->flashMessage(tr("You've signed in"));
             
             $redirectKey = $values->redirectKey;
 
             if ($redirectKey)
                 $this->getApplication()->restoreRequest($redirectKey);
-            else  $this->redirect("Admin:");
+            else  $this->redirect("Main:");
 
         } catch (NS\AuthenticationException $e) {
 

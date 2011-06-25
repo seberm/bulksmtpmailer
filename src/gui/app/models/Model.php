@@ -3,25 +3,20 @@
 use Nette\Object;
 use Nette\Database\Connection;
 use Nette\InvalidStateException;
+use Nette\Environment;
 
 
 class Model extends Object {
 
-    private static $m_keywords;
-    private static $m_description;
-
-    public static $database;
+    // Database should be accessible only from this object!
+    private static $database;
+    
+    public static $translator;
     
  
     public static function initialize($options) {
 
-        self::$m_keywords = $options->keywords;
-        self::$m_description = $options->description;
     }
-
-
-    public static function getDescription() { return self::$m_description; }
-    public static function getKeywords() { return self::$m_keywords; }
 
 
     public static function initDB($options) {
@@ -30,88 +25,164 @@ class Model extends Object {
     }
 
 
-    public static function getTodos() {
+    public static function initLocalization($options) {
+        
+        $lang = $options->lang; // Default app language
 
-        $data = self::$database->query("SELECT id, text, done FROM Todos;")->fetchAll();
+        $session = Environment::getSession("App");
+        if (isset($session->lang))
+            $lang = $session->lang;
+
+        switch ($lang) {
+            case "en":
+            case "cs":
+                $l = $lang;
+                break;
+
+            default:
+                $l = "en";
+                break;
+        }
+
+        $file = $options->langDir . "/app." . $l . ".mo";
+        self::$translator = new GettextTranslator($file, $l);
+    }
+
+
+    public static function getQueues() {
+
+        $data = self::$database->query("SELECT id, name, messageID, isSending, isCompleted FROM Queue ORDER BY id DESC;")->fetchAll();
 
         return $data;
+    }
+
+/*
+    public static function getQueue($id) {
+
+        return self::$database->table("Queue")->where("id = ?", $id)->createJoins("Queue.messageID => Message.id")->$select("name, isSending, isCompleted")->fetch();
+    }
+*/
+   
+    public static function addQueue($name, $messageID, $isSending = false, $isCompleted = false) {
+
+        $data = array("name" => $name,
+                      "messageID" => $messageID,
+                      "isSending" => $isSending,
+                      "isCompleted" => $isCompleted,
+                     );
+
+        return self::$database->table("Queue")->insert($data);
     }
     
     
-    public static function getNews($paginator) {
+    public static function removeQueue($id) {
 
-        $count = self::$database->table("News")->count();
-        $paginator->setItemCount($count);
-        
-        $data = self::$database->table("News")
-                               ->order("datetime DESC")
-                               ->limit($paginator->getLength(), $paginator->getOffset());
+        return self::$database->table("Queue")->where("id = ?", $id)->delete();
+    }
 
+    
+    public static function addMessage($subject, $text) {
+
+        $data = array("subject" => $subject,
+                      "text" => $text,
+                     );
+
+        return self::$database->table("Message")->insert($data);
+    }
+
+    
+    public static function getMessages() {
+
+        $data = self::$database->query("SELECT id, subject, text FROM Message ORDER BY id DESC;")->fetchAll();
+                
         return $data;
     }
 
 
-    public static function getScreenshots() {
+    public static function getMessage($id) {
 
-        $data = self::$database->query("SELECT title, filename FROM Screenshots;")->fetchAll();
-        //$data = self::$database->table("Screenshots")->select("title, filename")->fetchPairs()->toArray();
-        //dump($data);
+        return self::$database->table("Message")->where("id = ?", $id)->select("subject, text")->fetch();
+    }
+    
+    
+    public static function updateMessage($subject, $text, $id) {
+
+        $data = array("subject" => $subject,
+                      "text" => $text,
+                     );
+
+        return self::$database->table("Message")->where("id = ?", $id)->update($data);
+    }
+    
+
+    public static function removeMessage($id) {
+
+        return self::$database->table("Message")->where("id = ?", $id)->delete();
+    }
+
+    
+    public static function removeMail($id) {
+
+        return self::$database->table("Mail")->where("id = ?", $id)->delete();
+    }
+
+    
+    public static function getMails() {
+
+        $data = self::$database->query("SELECT id, name, email, sent FROM Mail ORDER BY id DESC;")->fetchAll();
+                
         return $data;
     }
 
 
+    public static function getMail($id) {
 
-
-    public static function addNews($title, $text) {
-
-        return self::$database->exec("INSERT INTO `News` (`title`, `text`, `datetime`)
-                                       VALUES (?, ?, NOW());", $title, $text);
+        return self::$database->table("Mail")->where("id = ?", $id)->select("name, email, sent")->fetch();
     }
 
 
-    public static function addTodo($text) {
+    public static function addMail($name, $email, $sent = false) {
 
-        $data = array("text" => $text);
-        return self::$database->table("Todos")->insert($data);
+        $data = array("name" => $name,
+                      "email" => $email,
+                      "sent" => $sent,
+                     );
+
+        return self::$database->table("Mail")->insert($data);
     }
 
 
-    public static function addScreenshot($title, $filename) {
+    public static function updateMail($name, $email, $id, $sent = false) {
 
-        $data = array("title" => $title,
-                      "filename" => $filename);
+        $data = array("name" => $name,
+                      "email" => $email,
+                      "sent" => $sent,
+                     );
 
-        return self::$database->table("Screenshots")->insert($data);
+        return self::$database->table("Mail")->where("id = ?", $id)->update($data);
     }
 
 
-    public static function removeNews($id) {
+    public static function startSending($id) {
 
-        return self::$database->table("News")->where("id = ?", $id)->delete();
-    }
-
-
-    public static function removeTodo($id) {
+        $data = array("isSending" => true);
         
-        return self::$database->table("Todos")->where("id = ?", $id)->delete();
+        return self::$database->table("Queue")->where("id = ?", $id)->update($data);
     }
 
 
-    public static function removeScreenshot($id) {
+    public static function removeUser($login) {
 
-        return self::$database->table("Screenshots")->where("id = ?", $id)->delete();
+        return self::$database->table("Users")->where("login = ?", $login)->delete();
     }
 
 
-    public static function markTodo($id, $done = false) {
+    public static function getUser($login) {
 
-        $data = array("done" => $done);
-                    
-        return self::$database->table("Todos")->where("id = ?", $id)->update($data);
+        return self::$database->table("Users")->where("login = ?", $login)->select("id, realName, password")->fetch();
+
     }
 
 };
-
-
 
 ?>

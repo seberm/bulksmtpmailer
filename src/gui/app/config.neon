@@ -18,8 +18,31 @@ common:
 				directory: [%appDir%, %libsDir%]
 			run: true
 
+	translation:
+		lang = en
+		langDir = %appDir%/locale
+
+
+	application:
+
+	database:
+		driver = mysql
+		charset = utf8
+
 production < common:
+	database:
+		lazy = true
+		username = seberm
+		database = bulk_mailer
+		password = something
+		host = localhost
 
 development < common:
+	database:
+		username = seberm
+		database = bulk
+		password = mandarinka
+		host = localhost
+
 
 console < common:
