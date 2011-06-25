@@ -1,20 +1,28 @@
 <?php
 
-/**
- * My Application
- *
- * @copyright  Copyright (c) 2010 John Doe
- * @package    MyApplication
- */
+abstract class BasePresenter extends Nette\Application\Presenter {
+
+    
+    public function beforeRender() {
+
+        $this->template->user = $this->getUser();
+        $this->template->setTranslator(Model::$translator);
+        $this->template->moduleName = tr("Bulk administration"); // It must be defined
+    }
 
 
-/**
- * Base class for all application presenters.
- *
- * @author     John Doe
- * @package    MyApplication
- */
-abstract class BasePresenter extends Nette\Application\Presenter
-{
 
+    public function handleCronScript() {
+
+        $this->redirectUri(CRON_SCRIPT_URI);
+    }
+
+
+    public function handleLogout() {
+
+        $this->getUser()->logout(true);
+        $this->flashMessage(tr("You've been signed out"));
+
+        $this->redirect("Sign:in");
+    }
 }

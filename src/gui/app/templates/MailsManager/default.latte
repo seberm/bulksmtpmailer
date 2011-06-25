@@ -1,0 +1,34 @@
+{block content}
+
+<span class="newItem">
+    <a href="{plink MailsManager:mail}">
+        <img src="{$basePath}/images/icons/add.png" alt="Add" title="Add" />
+    </a>
+</span>
+<br /><br />
+    
+{if $mails}
+<table class="listTable" cellpadding="5" cellspacing="0" border="0">
+    <tr>
+        <th>{_'Name'}</th>
+        <th>{_'E-Mail'}</th>
+        <th>{_'Action'}</th>
+    </tr>
+
+    {foreach $mails as $mail}
+    <tr>
+        <td>{$mail->name}</td>
+        <td>{$mail->email}</td>
+        <td align="center">
+            <a href="{plink RemoveMail!, $mail->id}">
+                <img src="{$basePath}/images/icons/remove.png" title="{_'Remove'}" alt="Remove" />
+            </a>
+            <a href="{plink MailsManager:mail, $mail->id}">
+                <img src="{$basePath}/images/icons/edit.png" title="{_'Edit'}" alt="Edit" />
+            </a>
+        </td>
+    </tr>
+    {/foreach}
+</table>
+{/if}
+{/block}

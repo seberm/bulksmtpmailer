@@ -1,0 +1,10 @@
+### Testing files
+_*
+src/_*
+
+### Only script which adds the emails into the database
+src/add.php
+
+### Configuration file
+src/config.inc.php
+

@@ -1,10 +1,10 @@
 <?php
 
-class MainPresenter extends BasePresenter
-{
+final class MainPresenter extends AdminPresenter {
 
-	public function renderDefault()
-	{
+	public function renderDefault() {
+        
+       $this->template->moduleName = tr("Welcome");
 	}
 
 }

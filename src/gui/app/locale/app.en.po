@@ -1,0 +1,80 @@
+# Gettext keys exported by GettextExtractor
+#, fuzzy
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2011-06-21T21:17:36+02:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: /srv/http/projects/BulkSMTPMailer/src/gui/./app/presenters/SignPresenter.php:17
+msgid "Already logged in."
+msgstr ""
+
+#: /srv/http/projects/BulkSMTPMailer/src/gui/./app/presenters/SignPresenter.php:26
+msgid "Web administration"
+msgstr ""
+
+#: /srv/http/projects/BulkSMTPMailer/src/gui/./app/presenters/SignPresenter.php:27
+msgid "Username:"
+msgstr ""
+
+#: /srv/http/projects/BulkSMTPMailer/src/gui/./app/presenters/SignPresenter.php:28
+msgid "Please provide a username."
+msgstr ""
+
+#: /srv/http/projects/BulkSMTPMailer/src/gui/./app/presenters/SignPresenter.php:30
+msgid "Password:"
+msgstr ""
+
+#: /srv/http/projects/BulkSMTPMailer/src/gui/./app/presenters/SignPresenter.php:31
+msgid "Please provide a password."
+msgstr ""
+
+#: /srv/http/projects/BulkSMTPMailer/src/gui/./app/presenters/SignPresenter.php:33
+msgid "Remember me on this computer"
+msgstr ""
+
+#: /srv/http/projects/BulkSMTPMailer/src/gui/./app/presenters/SignPresenter.php:37
+msgid "Sign in"
+msgstr ""
+
+#: /srv/http/projects/BulkSMTPMailer/src/gui/./app/presenters/SignPresenter.php:57
+msgid "You've signed in."
+msgstr ""
+
+#: /srv/http/projects/BulkSMTPMailer/src/gui/./app/templates/@layout.latte:12
+msgid "Administration"
+msgstr ""
+
+#: /srv/http/projects/BulkSMTPMailer/src/gui/./app/templates/@layout.latte:19
+msgid "Home"
+msgstr ""
+
+#: /srv/http/projects/BulkSMTPMailer/src/gui/./app/templates/@layout.latte:21
+msgid "Bulk administration"
+msgstr ""
+
+#: /srv/http/projects/BulkSMTPMailer/src/gui/./app/templates/@layout.latte:22
+msgid "System manager"
+msgstr ""
+
+#: /srv/http/projects/BulkSMTPMailer/src/gui/./app/templates/@layout.latte:24
+msgid "E-mails manager"
+msgstr ""
+
+#: /srv/http/projects/BulkSMTPMailer/src/gui/./app/templates/@layout.latte:25
+msgid "Messages manager"
+msgstr ""
+
+#: /srv/http/projects/BulkSMTPMailer/src/gui/./app/templates/@layout.latte:27
+msgid "CRON Script"
+msgstr ""
+
+#: /srv/http/projects/BulkSMTPMailer/src/gui/./app/templates/@layout.latte:37
+msgid "Powered by"
+msgstr ""

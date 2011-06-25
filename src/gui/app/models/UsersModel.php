@@ -10,22 +10,22 @@ class UsersModel extends Object implements IAuthenticator {
 
 	public function authenticate(array $credentials) {
 
-        list($username, $password) = $credentials;
+        list($login, $password) = $credentials;
         
-		$row = Model::$database->query('SELECT id, realName, password FROM Users WHERE login=?', $username)->fetch();
+		$user = Model::getUser($login);//$database->query('SELECT id, realName, password FROM Users WHERE login=?', $username)->fetch();
 
-		if (!$row) 
-			throw new AuthenticationException("User '$username' not found.", self::IDENTITY_NOT_FOUND);
+		if (!$user) 
+			throw new AuthenticationException("User '$login' not found.", self::IDENTITY_NOT_FOUND);
 
-		if ($row->password !== $this->calculateHash($password))
+		if ($user->password !== $this->calculateHash($password))
 			throw new AuthenticationException("Invalid password.", self::INVALID_CREDENTIAL);
 
-		unset($row->password);
+		unset($user->password);
 
-        $data = array('realName' => $row->realName,
-                      'login' => $username);
+        $data = array('realName' => $user->realName,
+                      'login' => $login);
 
-        $identity = new Identity($row->id, NULL, $data);
+        $identity = new Identity($user->id, NULL, $data);
 
         return $identity; 
 	}

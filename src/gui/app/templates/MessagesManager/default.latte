@@ -1,0 +1,33 @@
+{block content}
+
+<span class="newItem">
+    <a href="{plink MessagesManager:message}">
+        <img src="{$basePath}/images/icons/add.png" alt="Add" title="Add" />
+    </a>
+</span>
+<br /><br />
+    
+{if $messages}
+<table class="listTable" cellpadding="5" cellspacing="0" border="0">
+    <tr>
+        <th>{_'Subject'}</th>
+        <th>{_'Text'}</th>
+    </tr>
+
+    {foreach $messages as $message}
+    <tr>
+        <td>{$message->subject}</td>
+        <td>{$message->text|stripTags|truncate:35}</td>
+        <td align="center">
+            <a href="{plink RemoveMessage!, $message->id}">
+                <img src="{$basePath}/images/icons/remove.png" title="{_'Remove'}" alt="Remove" />
+            </a>
+            <a href="{plink MessagesManager:message, $message->id}">
+                <img src="{$basePath}/images/icons/edit.png" title="{_'Edit'}" alt="Edit" />
+            </a>
+        </td>
+    </tr>
+    {/foreach}
+</table>
+{/if}
+{/block}

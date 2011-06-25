@@ -1,36 +1,48 @@
-{**
- * My Application layout template.
- *
- * @copyright  Copyright (c) 2010 John Doe
- * @package    MyApplication
- *
- * @param string   $basePath web base path
- * @param string   $robots   tell robots how to index the content of a page (optional)
- * @param array    $flashes  flash messages
- *}
-
 <!DOCTYPE html>
-<html>
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-
-	<meta name="description" content="Nette Framework web application skeleton">
-	<meta name="robots" content="{$robots}" n:ifset="$robots">
-
-	<title>Nette Application Skeleton</title>
-
-	<link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css" type="text/css">
-	<link rel="stylesheet" media="print" href="{$basePath}/css/print.css" type="text/css">
-	<link rel="shortcut icon" href="{$basePath}/favicon.ico" type="image/x-icon">
-
-	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
-	<script type="text/javascript" src="{$basePath}/js/netteForms.js"></script>
-	{block head}{/block}
-</head>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="cs" lang="cs">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta name="author" content="Sabart Otto; seberm@gmail.com - www.seberm.com" />
+		<meta name="generator" content="Vim" />
+		<meta name="robots" content="noindex, nofollow" />
+		<link rel="stylesheet" type="text/css" href="{$basePath}/css/admin.css" />
+		<script type="text/javascript" src="{$basePath}/javascripts/jquery.min.js"></script>
+	    <script type="text/javascript" src="{$basePath}/javascripts/netteForms.js"></script>
+	    <script type="text/javascript" src="{$basePath}/javascripts/admin.js"></script>
+		<title>BulkSMTPMailer - {_'Administration'} | {$moduleName}</title>
+	</head>
 
 <body>
-	<div n:foreach="$flashes as $flash" class="flash {$flash->type}">{$flash->message}</div>
+<div id="mainContainer">
+	<div id="header"></div>
+	<div id="menu">
+        {if $user->isLoggedIn()}
+		<span class="menuItem"><a href="{plink Main:}">{_'Home'}</a></span>
+		<span class="menuItem"><hr /></span>
+		<span class="menuItem"><a href="{plink BulkAdmin:}">{_'Bulk administration'}</a></span>
+		<span class="menuItem"><a href="{plink SystemManager:}">{_'System manager'}</a></span>
+		<span class="menuItem"><hr /></span>
+		<span class="menuItem"><a href="{plink MailsManager:}">{_'E-mails manager'}</a></span>
+		<span class="menuItem"><a href="{plink MessagesManager:}">{_'Messages manager'}</a></span>
+		<span class="menuItem"><hr /></span>
+        <span class="menuItem"><a href="{plink Logout!}">{_'Logout'}</a></span>
+		<span class="menuItem"><hr /><br /></span>
+        {/if}
+		<span class="menuItem"><a href="{plink CronScript!}" target="_blank"><b>{_'CRON Script'}</b></a></span>
+	</div>
+	<div id="content">
+		<h1>{$moduleName}</h1>
 
-	{include #content}
+        {foreach $flashes as $flash}
+            <div class="message-{$flash->type}">{$flash->message}</div>
+        {/foreach}
+		<div id="moduleContent">
+        
+            {include #content}
+        
+        </div>
+	</div>
+	<div id="footer">{_'Powered by'} <a href="http://www.seberm.com">BulkSMTPMailer</a><div>
+</div>
 </body>
 </html>
