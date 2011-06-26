@@ -67,7 +67,7 @@ private $m_config = array();
 
 		$sqlMails = "SELECT `id` FROM `Mail`
 					 WHERE `sent` = false
-					 LIMIT 0, ".$this->_config['bulk']['batch'].";";
+					 LIMIT 0, ".$this->m_config['bulk']['batch'].";";
 
 		$resMails = $_MySql->query($sqlMails);
 		
@@ -308,6 +308,8 @@ l4P852DMLINVrvOXtNTlyDv5mHfbbzIXnSNFBnnNld5dZT/dIZSOOn0X/sU9Xh0vATAzzwXCZ4GU
 				SET `isSending` = false, `isCompleted` = true
 				WHERE `id` = ".$this->m_queue->getID().";";
 		
+        Mail::markUnsent();
+
 		return $_MySql->query($sql);
 	}
 	

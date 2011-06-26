@@ -234,16 +234,16 @@ class SMTP {
 			$server = $this->m_proxyServer;
 			$port = $this->m_proxyPort;
 		}
-
+        
         // Should be connection secured via SSL?
-        $server = (($this->secure === "ssl") ? "ssl://" : "") . $server;
+        $server = (($this->m_secure === "ssl") ? "ssl://" : "") . $server;
 		
         $ret = $this->m_socket = @fsockopen($server, $port, $errno, $errstr, $this->m_timeout);
 		
 		if (!is_resource($this->m_socket))
-			throw new SmtpException($errstr, $errno);
+			throw new SMTPException($errstr, $errno);
 		
-        stream_set_timeout($this->m_socket, $this->timeout, 0);
+        stream_set_timeout($this->m_socket, $this->m_timeout, 0);
 
 		// We're connected
 		$this->m_connected = true;
@@ -282,7 +282,7 @@ class SMTP {
 	public function setLogin($login) {
 		
 		if (empty($login))
-			throw new SmtpException("you're setting an empty login");
+			throw new SMTPException("you're setting an empty login");
 		
 		$this->m_login = $login;
 
@@ -310,13 +310,15 @@ class SMTP {
 	 * @return void
 	 */
 	private function write($command, $expectedCode = NULL) {
-   
+        
         fwrite($this->m_socket, $command . Message::EOL);
+        
+        if ($expectedCode) {  
 
-        $returnedCode = (int) $this->read();
-
-        if ($expectedCode && !in_array($returnedCode, (array) $expectedCode))
-            throw new SmtpException("SMTP server did not accept " . $command . "; " . $this->getResponseText($returnedCode));
+            $returnedCode = (int) $this->read();
+            if (!in_array($returnedCode, (array) $expectedCode))
+                throw new SMTPException("SMTP server did not accept " . $command . "; " . $this->getResponseText($returnedCode));
+        }
 	}
 	
 	
@@ -329,7 +331,7 @@ class SMTP {
 		$s = "";
 		
 		if (!$this->isConnected())
-			throw new SmtpException("server is not connected");
+			throw new SMTPException("server is not connected");
 			
         while (($line = fgets($this->m_socket, 1e3)) != NULL) {
 				
@@ -338,7 +340,7 @@ class SMTP {
             if (substr($line, 3, 1) === ' ')
                 break;
 		}
-
+        
         return $s;
 	}
 	
@@ -422,11 +424,11 @@ class SMTP {
 		$login = $this->m_login;
 		$password = $this->m_password;
 		
-        if ($this->secure === "tls") {
+        if ($this->m_secure === "tls") {
 
             $this->write("STARTTLS", 220);
             if (!stream_socket_enable_crypto($this->m_socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT))
-                throw new SmtpException("unable to connect via TLS");
+                throw new SMTPException("unable to connect via TLS");
         }
 
         $this->write("AUTH LOGIN", 334);
@@ -524,7 +526,7 @@ class SMTP {
 
         // Are we using the proxy?
 		if ($this->m_useProxy)
-			$server = $this->m_proxyServer;
+			$server = $this->m_server;
 
 	    if (!$this->ehlo($server))
             $this->helo($server);    
@@ -543,10 +545,10 @@ class SMTP {
         global $_Config;
 
 		if (!$this->isLogged())
-			throw new SmtpException("you're not logged in");
+			throw new SMTPException("you're not logged in");
 		
 		if (!Utils::isEmail($mail->getEmail()))
-			throw new SmtpException("bad email format: " . $mail->getEmail());
+			throw new SMTPException("bad email format: " . $mail->getEmail());
 
         $this->write("MAIL FROM:<" . $_Config['bulk']['from'] . ">", 250);
         $this->write("RCPT TO:<" . $mail->getEmail() . ">", array(250, 251));

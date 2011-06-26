@@ -163,7 +163,7 @@ class Message {
         $output = "";
         $bound = "--------" . Utils::randomString();
 
-        foreach ($this->headers as $name => $value) {
+        foreach ($this->m_headers as $name => $value) {
 
             $output .= $name . ":" . $value;
             $output .= self::EOL;
