@@ -4,6 +4,9 @@
  * @throws SMTPException
  * @file SMTP.class.php
  * @author Otto Sabart <seberm@gmail.com>
+ *
+ * RFC 2821 - Simple Mail Transfer Protocol
+ * Some methods are inspired by Nette. Thank you David Grudl.
  */
 
 if (!defined("CURRENT_ROOT"))
@@ -17,101 +20,117 @@ if (!defined("SMTPEXCEPTION"))
 
 if (!defined("UTILS"))
    require_once(CURRENT_ROOT."classes/Utils.class.php");
-   
 
-### Constants
-$prefix = "SMTP_";
-define ($prefix."TIMEOUT", 30);
-define ($prefix."AUTHTYPE", "LOGIN");
-define ($prefix."SMTPTYPE", "SMTP");
 
-if (!defined("CRLF"))
-	define ("CRLF", "\r\n", true);
+if (!defined("MESSAGE"))
+   require_once(CURRENT_ROOT."classes/Message.class.php");
 
 
 class SMTP {
-	
+
+    // Constants
+    const TIMEOUT = 30;
+    const AUTHTYPE = "LOGIN";
+    const SMTPTYPE = "ESMTP";
+    const DEFAULT_PORT = 25;
+    const SSL_PORT = 465;
+
 	/** Final-server address
-	 * @var string $_server
+	 * @var string $m_server
 	 */
-	private $_server;
+	private $m_server;
 	
 	/** Final-server port
-	 * @var int $_port;
+	 * @var int $m_port;
 	 */
-	private $_port;
+	private $m_port;
 	
 	/** Proxy server address
-	 * @var string $_proxyServer
+	 * @var string $m_proxyServer
 	 */
-	private $_proxyServer;
+	private $m_proxyServer;
 	
 	/** Proxy server port
-	 * @var int $_proxyPort
+	 * @var int $m_proxyPort
 	 */
-	private $_proxyPort;
+	private $m_proxyPort;
 	
-	/** Indicates if we're using proxy server
-	 * @var boolean $_useProxy
+	/** Indicates if we're using proxy connection
+	 * @var boolean $m_useProxy
 	 */
-	private $_useProxy = false;
+	private $m_useProxy = false;
 	
 	/** Contains a server SMTP type
-	 * @var string $_smtpType
+	 * @var string $m_smtpType
 	 */
-	private $_smtpType;
+	private $m_smtpType;
 	
-	/** Contains a authorization type
-	 * @var string $_authType
+	/** Contains current authorization type
+	 * @var string $m_authType
 	 */
-	private $_authType;
+	private $m_authType;
 	
 	/** Connection timeout
-	 * @var int $_timeout
+	 * @var int $m_timeout
 	 */
-	private $_timeout;
+	private $m_timeout;
 	
 	/** Contains a SMTP username
-	 * @var string $_login
+	 * @var string $m_login
 	 */
-	private $_login;
+	private $m_login;
 	
 	/** Contains a SMTP password
-	 * @var string $_password
+	 * @var string $m_password
 	 */
-	private $_password;
+	private $m_password;
 	
 	/** Pointer to SMTP socket
-	 * @var socket $_socket
+	 * @var socket $m_socket
 	 */
-	private $_socket = null;
+	private $m_socket = null;
+
+    /** Should be connection secured?
+     * @var string $m_secure [ ssl | tls | (empty) ]
+     */
+    private $m_secure;
 	
 	/** Indicates if user logged
-	 * @var boolean $_logged
+	 * @var boolean $m_logged
 	 */
-	private $_logged = false;
+	private $m_logged = false;
 	
 	/** Indicates if we're connected to the server
-	 * @var boolean $_connected
+	 * @var boolean $m_connected
 	 */
-	private $_connected = false;
+	private $m_connected = false;
 	
 	/** An Array of auth types which are supported by server we're connecting to
-	 * @var array $_supportedAuthTypes
+	 * @var array $m_supportedAuthTypes
 	 */
-	private $_supportedAuthTypes = Array();
+	private $m_supportedAuthTypes = array();
 	
 	/** SMTP Auth methods which are supported by this code
-	 * @var array $SMTP_AUTH_TYPES
+	 * @var array $AUTH_TYPES
 	 */
-	private $SMTP_AUTH_TYPES = Array("LOGIN", "PLAIN"/*, "DIGEST-MD5", "CRAM-MD5", "GSSAPI"*/);
+    private $SMTP_AUTH_TYPES = array("LOGIN",
+                             "PLAIN",
+                          /* "DIGEST-MD5", 
+                             "CRAM-MD5",
+                             "GSSAPI", */
+                            );
 	
-	private $SMTP_TYPES = Array("SMTP", "ESMTP");
+	/** Possible SMTP types
+     * @var array $SMTP_TYPES
+     */
+    private $SMTP_TYPES = array("SMTP",
+                                "ESMTP",
+                               );
 	
 	/** Definition of possible errors
-	 * @var array $SMTP_TYPES
+	 * @var array SMTP::RESPONSES
 	 */
-	private $SMTP_RESPONSES = Array(
+	private $SMTP_RESPONSES = array(
 								200 => "(nonstandard success response, see rfc876)",
 								211 => "System status, or system help reply",
 								214 => "Help message",
@@ -119,7 +138,7 @@ class SMTP {
 						  		221 => "Service closing transmission channel",
 								250 => "Requested mail action okay, completed",
 								251 => "User not local",
-								354 => "Start mail input; end with <CRLF>.<CRLF>",
+								354 => "Start mail input; end with <EOL>.<EOL>",
 								421 => "Service not available, closing transmission channel",
 								450 => "Requested mail action not taken: mailbox unavailable",
 								451 => "Requested action aborted: local error in processing",
@@ -135,7 +154,8 @@ class SMTP {
 								551 => "User not local",
 								552 => "Requested mail action aborted: exceeded storage allocation",
 								553 => "Requested action not taken: mailbox name not allowed",
-								554 => "Transaction failed");
+                                554 => "Transaction failed",
+                            );
 								
 	
 	/** Constructor
@@ -143,181 +163,191 @@ class SMTP {
 	 * @param $port Port of the server
 	 * @param $timeout The connection timeout
 	 */
-	function __construct ($server, $port, $timeout = SMTP_TIMEOUT, $authType = SMTP_AUTH_TYPE) {
+	function __construct($server, $port, $secure, $timeout = TIMEOUT, $authType = AUTH_TYPE) {
 		
-		$this->_server = $server;
-		$this->_port = is_numeric($port) ? $port : 0;
-		$this->_timeout = is_numeric($timeout) ? $timeout : 0;
+		$this->m_server = isset($server) ? $server : "";
+		$this->m_port = isset($port) ? (int) $port : DEFAULT_PORT;
+		$this->m_timeout = (int) $timeout; 
+        $this->m_secure = $secure;
 		
 		if (in_array($authType, $this->SMTP_AUTH_TYPES, true))
-			$this->_authType = $authType;
-		else $this->_authType = SMTP_AUTH_TYPE;
+			$this->m_authType = $authType;
+		else $this->m_authType = AUTH_TYPE;
 
+        if (!$this->m_port)
+            $this->m_port = ($this->m_secure === "ssl") ? SSL_PORT : $port;
 	}
 	
 	
 	/** Destructor
-	 * Disconects if we are connected.
+	 * Disconects if we are connected because we should end connection correctly.
 	 */
-	function __destruct () {
+	function __destruct() {
 
 		if ($this->isConnected())
 			$this->disconnect();
 	}
 
 	
-	public function __toString () {
+    /** __toString
+     * Returns class name.
+     * @return string
+     */
+	public function __toString() {
 		
 		return get_class($this);
 	}
 	
 	
-	// GET methods
-	public function getServer () { return $this->_server; }
-	public function getPort () { return $this->_port; }
-	public function getLogin () { return $this->_login; }
-	public function getTimeout () { return $this->_timeout; }
-	public function getProxyServer () { return $this->_proxyServer; }
-	public function getProxyPort () { return $this->_proxyPort; }
+	// Getters
+	public function getServer() { return $this->m_server; }
+	public function getPort() { return $this->m_port; }
+	public function getLogin() { return $this->m_login; }
+	public function getTimeout() { return $this->m_timeout; }
+	public function getProxyServer() { return $this->m_proxyServer; }
+	public function getProxyPort() { return $this->m_proxyPort; }
+    public function getSmtpType() { return $this->m_smtpType; }
 	
 	
 	/** Returns true if we are logged to SMTP server
 	 * @return boolean
 	 */
-	public function isLogged () { return $this->_logged; }
+	public function isLogged() { return $this->m_logged; }
 	
 	
 	/** Returns true if we are connected to SMTP server
 	 * @return boolean
 	 */
-	public function isConnected () { return $this->_connected; }
+	public function isConnected() { return $this->m_connected; }
 	
 	
 	/** Opens a connection to SMTP server
-	 * return boolean
+     * @return boolean
 	 */
-	public function connect () {
+	public function connect() {
 		
-		$server = $this->_server;
-		$port = $this->_port;
+		$server = $this->m_server;
+		$port = $this->m_port;
 		
-		if ($this->_useProxy) {
+		if ($this->m_useProxy) {
 			
-			$server = $this->_proxyServer;
-			$port = $this->_proxyPort;
+			$server = $this->m_proxyServer;
+			$port = $this->m_proxyPort;
 		}
+
+        // Should be connection secured via SSL?
+        $server = (($this->secure === "ssl") ? "ssl://" : "") . $server;
 		
-        $this->_socket = @fsockopen($server, $port, $errno, $errstr, $this->_timeout);
+        $ret = $this->m_socket = @fsockopen($server, $port, $errno, $errstr, $this->m_timeout);
 		
-		if (!is_resource($this->_socket))
-			throw new SmtpException("failed to open a SMTP connection (".$errno." - ".$errstr.")");
+		if (!is_resource($this->m_socket))
+			throw new SmtpException($errstr, $errno);
 		
-		// So,.. we're connected
-		$this->_connected = true;
+        stream_set_timeout($this->m_socket, $this->timeout, 0);
+
+		// We're connected
+		$this->m_connected = true;
 		
-		// It's very important to call this function because we must come over the welcome message
-		$this->readLine($this->getLine());
+		// It's very important to call this function because we must come over the greeeting message
+		$this->read();
 		
-		$ret = $this->identify();
-		if (!$ret && $this->isConnected())
-			$this->disconnect();
-		
-		return $ret;
+        $this->identify();
+        $this->login();
+
+        return $ret;
 	}
 	
 	
 	/** Removes the SMTP server socket
 	 * @return boolean
 	 */
-	public function disconnect () {
+	public function disconnect() {
 		
-		if (!$this->_connected)
+		if (!$this->m_connected)
 			return true;
 		
 		$this->quit();
 		
 		// We're disconnected
-		$this->_connected = false;
+		$this->m_connected = false;
 		
-		if (!is_resource($this->_socket))
-			return true;
-
-		return fclose($this->_socket);
+		return fclose($this->m_socket);
 	}
 	
 	
 	/** Sets the SMTP username
-	 * @param String $login
+	 * @param string $login
+     * @return SMTP
 	 */
-	public function setLogin ($login = "") {
+	public function setLogin($login) {
 		
 		if (empty($login))
 			throw new SmtpException("you're setting an empty login");
 		
-		$this->_login = $login;
+		$this->m_login = $login;
+
+        return $this;
 	}
 	
 	
 	/** Sets the SMTP server password
-	 * @param String $password
+	 * @param string $password
+     * @return SMTP
 	 */
-	public function setPassword ($password = "") {
+	public function setPassword ($password) {
 		
-		if (empty($password))
-			throw new SmtpException("you're setting an empty password");
-		
-		$this->_password = $password;
+		$this->m_password = $password;
+
+        return $this;
 	}
 	
 	
-	/** Executes a command on SMTP server
-	 * @param String $command
+    /** Executes a command on SMTP server
+     * Inspired by Nette framework - Thanks!
+	 * @param string $command
+     * @param int $expectedCode response code
 	 * @see smtpLogin
-	 * @return boolean
+	 * @return void
 	 */
-	public function execute ($command) {
+	private function write($command, $expectedCode = NULL) {
+   
+        fwrite($this->m_socket, $command . Message::EOL);
 
-		$cmd = $command;
-		$cmd .= CRLF;
+        $returnedCode = (int) $this->read();
 
-		if (!$this->isConnected())
-			throw new SmtpException("server is not connected");
-		
-		return fwrite($this->_socket, $cmd, strlen($cmd));
+        if ($expectedCode && !in_array($returnedCode, (array) $expectedCode))
+            throw new SmtpException("SMTP server did not accept " . $command . "; " . $this->getResponseText($returnedCode));
 	}
 	
 	
 	/** Gets a line from the socket connection
-	 * @return boolean or string
+     * Inspired by Nette framework - Thanks!
+	 * @return string
 	 */
-	private function getLine () {
+	private function read() {
 		
-		$line = "";
-		$ret = "";
+		$s = "";
 		
 		if (!$this->isConnected())
 			throw new SmtpException("server is not connected");
 			
-/** @todo edit: || substr($line, 3, 1) !== " " -> it's weird */
+        while (($line = fgets($this->m_socket, 1e3)) != NULL) {
+				
+            $s .= $line;
 
-		while((strpos($ret, CRLF) === false) || substr($line, 3, 1) !== " ") {
-//		while (preg_match("/[a-zA-Z0-9]".CRLF."/", $line)) {
-				
-			$line = fgets($this->_socket, 512);
-			$ret .= $line;
+            if (substr($line, 3, 1) === ' ')
+                break;
 		}
-					
-		if (empty($ret))
-			return false;
-				
-		return $ret;
+
+        return $s;
 	}
 	
 	
 	/** Reads a line from 0 to $chars chars
 	 * @param string $line
-	 * @return integer
+	 * @return int
 	 */
+    /*
 	private function readLine ($line) {
 		
 		if (empty($line))
@@ -327,8 +357,8 @@ class SMTP {
 		if (preg_match("/220\s[\w-.]+\s(?P<opt>\w+)/", $line, $matches)) {
 
 			if (in_array($matches['opt'], $this->SMTP_TYPES, true))
-				$this->_smtpType = $matches['opt'];
-			else $this->_smtpType = SMTP_SMTPTYPE;
+				$this->m_smtpType = $matches['opt'];
+			else $this->m_smtpType = SMTP_SMTPTYPE;
 		}
 
 		// Configuration of supported authorization types
@@ -341,7 +371,7 @@ class SMTP {
 				
 				case "AUTH":
 					
-					$this->_supportedAuthTypes = explode(" ", strtoupper($matches['opt']));
+					$this->m_supportedAuthTypes = explode(" ", strtoupper($matches['opt']));
 					break;
 					
 				case "SIZE":
@@ -362,12 +392,14 @@ class SMTP {
 		return ((int) substr(trim($line), 0, 3));
 	}
 	
+     */
+
 	
 	/** Returns a server response text by given response id
 	 * @param int $key
 	 * @return string
 	 */
-	private function getResponseText($key = 0) {
+	public function getResponseText($key = 0) {
 		
 		$responseText = "";
 	
@@ -385,16 +417,30 @@ class SMTP {
 	 * @see connect
 	 * @see disconnect
 	 */
-	public function login () {
+	private function login() {
 		
-		if (!$this->isConnected())
-			throw new SmtpException("server is not connected");
-	
-		$login = $this->_login;
-		$password = $this->_password;
+		$login = $this->m_login;
+		$password = $this->m_password;
 		
-/** @todo it's neccessary to programme other autorization methods */
-		switch ($this->_authType) {
+        if ($this->secure === "tls") {
+
+            $this->write("STARTTLS", 220);
+            if (!stream_socket_enable_crypto($this->m_socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT))
+                throw new SmtpException("unable to connect via TLS");
+        }
+
+        $this->write("AUTH LOGIN", 334);
+        $this->write(base64_encode($login), 334);
+        $this->write(base64_encode($password), 235);
+
+        $this->m_logged = true;
+
+        /** 
+         * @todo it's neccessary to programme other autorization methods
+         */
+        /*
+		switch ($this->m_authType) {
+
 			case "PLAIN":
 			
 				// It's neccessary to keep this syntax: 'username\0username\0password'
@@ -405,7 +451,7 @@ class SMTP {
 				if ($responseID != 235)
 					throw new SmtpException($this->getResponseText($responseID));
 				
-				$this->_logged = true;
+				$this->m_logged = true;
 				
 				break;
 			
@@ -433,127 +479,92 @@ class SMTP {
 				if ($responseID != 235)
 					throw new SmtpException($this->getResponseText($responseID));
 				
-				$this->_logged = true;
+				$this->m_logged = true;
  		
 				break;
 		}
+         */
 	}
 	
 	
 	/** Says a HELO to a SMTP server
 	 * @return boolean
 	 */
-	private function helo () {
-		
-		if (!$this->isConnected())
-			return false;
-		
-		$this->execute("HELO ".$this->_server);
-		
-		$responseID = $this->readLine($this->getLine());
-		if ($responseID != 250)
-			throw new SmtpException($this->getResponseText($responseID));
-			$this->disconnect();
-		
+	private function helo($server) {
+        
+        $this->write("HELO " . $server);
+
+        if ((int) $this->read() !== 250)
+            return false;
+
+        $this->m_smtpType = "SMTP";
 		return true;
+
 	}
 	
 	
 	/** Says a EHLO to a eSMTP server
 	 * @return boolean
 	 */
-	private function ehlo () {
+	private function ehlo($server) {
 		
-		if (!$this->isConnected())
-			return false;
-		
-		$server = $this->_server;
-		
-		// Are we using the proxy?
-		if ($this->_useProxy)
-			$server = $this->_proxyServer;
-		
-		$this->execute("EHLO ".$server);
-		$responseID = $this->readLine($this->getLine());
+		$this->write("EHLO " . $server);
 
-		if ($responseID != 250)
-			throw new SmtpException($this->getResponseText($responseID));
-		
+        if ((int) $this->read() !== 250)
+            return false;
+
+        $this->m_smtpType = "ESMTP";
 		return true;
 	}
 	
 
-	private function identify () {
-		
-		if (!$this->isConnected())
-			return false;
+	private function identify() {
+    
+        $server = $this->m_server;
 
-		$returnStat = false;
-		switch ($this->_smtpType) {
-			
-			case "ESMTP":
-				$returnStat = $this->ehlo();
-				break;
-				
-			case "SMTP":
-			default:
-				$returnStat = $this->helo();
-				break;
-		}
-		
-		return $returnStat;
+        // Are we using the proxy?
+		if ($this->m_useProxy)
+			$server = $this->m_proxyServer;
+
+	    if (!$this->ehlo($server))
+            $this->helo($server);    
 	}
 	
 	
-	public function quit () {
+	private function quit() {
 		
-		$this->execute("QUIT");
-		
-		$responseID = $this->readLine($this->getLine());
-		if ($responseID != 221)
-			throw new SmtpException($this->getResponseText($responseID));
+		$this->write("QUIT", 221);
 	}
 	
 	
-	public function send ($recipient, $sender, $body, $header) {
+	public function send(Message $message, Mail $mail) {
 		
+        /** @todo predelat nacitani konfigurace */
+        global $_Config;
+
 		if (!$this->isLogged())
 			throw new SmtpException("you're not logged in");
 		
-		if (!Utils::isEmail($recipient))
-			throw new SmtpException("bad email format: ".$recipient);
-	
-		$this->execute("MAIL FROM:<".$sender.">");
-		$responseID = $this->readLine($this->getLine());
-		if ($responseID != 250)
-			throw new SmtpException($this->getResponseText($responseID));
-		
-		$this->execute("RCPT TO:<".$recipient.">");
-		$responseID = $this->readLine($this->getLine());
-		if ($responseID != 250)
-			throw new SmtpException($this->getResponseText($responseID));
-			
-		$this->execute("DATA");
-		$responseID = $this->readLine($this->getLine());
-		if ($responseID != 354)
-			throw new SmtpException($this->getResponseText($responseID));
-		
-		$msg = $header . $body;
-		$this->execute($msg);
+		if (!Utils::isEmail($mail->getEmail()))
+			throw new SmtpException("bad email format: " . $mail->getEmail());
 
-		$this->execute(CRLF.".");
-		$responseID = $this->readLine($this->getLine());
-		if ($responseID != 250)
-			throw new SmtpException($this->getResponseText($responseID));
-	
+        $this->write("MAIL FROM:<" . $_Config['bulk']['from'] . ">", 250);
+        $this->write("RCPT TO:<" . $mail->getEmail() . ">", array(250, 251));
+        $this->write("DATA", 354);
+
+        $data = $message->generateMimeMessage();
+        $this->write($data);
+        $this->write(".", 250);
 	}
 	
 	
 	public function useProxy($server, $port) {
 		
-		$this->_proxyServer = $server;
-		$this->_proxyPort = is_numeric($port) ? $port : 0;
-		$this->_useProxy = true;
+		$this->m_proxyServer = $server;
+		$this->m_proxyPort = isset($port) ? (int) $port : 0;
+		$this->m_useProxy = true;
+
+        return $this;
 	}
 }
 
