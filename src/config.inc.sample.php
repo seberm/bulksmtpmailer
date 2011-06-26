@@ -4,10 +4,10 @@
  */
 
 
-$_Config = Array(
+$_Config = array(
 
 ### DATABASE SERVER ###
-"mysql" => Array(
+"mysql" => array(
 
 ### Server
 "server" => "localhost", // Examples: "localhost", "192.168.3.122", "81.35.68.121:3306", "82.35.58.119:3307"
@@ -25,7 +25,7 @@ $_Config = Array(
 
 
 ### MAIN SYSTEM SETTINGS
-"system" => Array(
+"system" => array(
 
 
 ### Enable/Disable GUI
@@ -36,7 +36,7 @@ $_Config = Array(
 
 
 ### BULK APPLICATION - It is not neccessary to set if GUI value is enabled ###
-"bulk" => Array(
+"bulk" => array(
 
 ### Bound
 "bound" => "somebound",
@@ -51,13 +51,13 @@ $_Config = Array(
 "from" => "somebody@some.tld",
 
 ### Message content type
-"contentType" => "html", // plain X html
+"contentType" => "html", // plain | html
 
 
 
 
 ### SMTP MAIN CONFIGURATION
-"smtp" => Array(
+"smtp" => array(
 
 ### Server
 "server" => "smtp.server.tld",
@@ -72,16 +72,18 @@ $_Config = Array(
 "password" => "password_to_smtp",
 
 ### Server timeout				
-"timeout" => 30,
+"timeout" => 30, // Default: 30
 
 ### Auth type
 "authType" => "LOGIN", // LOGIN, PLAIN, DIGEST-MD5, CRAM-MD5, GSSAPI
 
+### Secured SMTP
+"secure" => "", // ssl | tls | (empty)
 
 ### The proxy options
 
 ### Enable proxy?
-"useProxy" => true, // false X true
+"useProxy" => true, // false | true
 
 ### Server
 // -> Running proxy with ssh: ssh -L 9876:smtp.skok.cz:25 seberm@progdan.cz -p 8765

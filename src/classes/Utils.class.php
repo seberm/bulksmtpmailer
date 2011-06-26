@@ -43,10 +43,18 @@ final class Utils {
 	public static function escape ($string) {
 
 		global $_MySql;
+
 		if ($_MySql)
 			return $_MySql->escape_string($string);
-		else throw new BulkException("SQL string is not escaped; exiting ...");
+		else 
+            return mysql_escape_string($string);
 	}
+
+
+    public static function randomString() {
+
+        return md5(@uniqid());
+    }
 	
 }
 

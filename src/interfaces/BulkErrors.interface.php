@@ -10,7 +10,8 @@ if (!defined("CURRENT_ROOT"))
 
 
 interface BulkErrors {
-	public function getStack ();
+
+	public function getStack();
 }
 
 

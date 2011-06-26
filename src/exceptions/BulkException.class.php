@@ -21,25 +21,25 @@ if (!defined("LOGGER"))
 
 class BulkException extends ErrorException implements BulkErrors {
 	
-	private $_Logger = null;
+	private $m_logger = null;
 
 	function __construct($msg) {
 		
 		parent::__construct($msg);
 		
-		$this->_Logger = new Logger;
+		$this->m_logger = new Logger;
 	}
 	
 	
 	public function getStack () {
 		
-		$msg = "BulkMailer - ".$this->getMessage();
+		$msg = "BulkMailer - " . $this->getMessage();
 
 		// Only for tessting
 		//$msg = "BulkMailer (File: ".pathinfo($this->getFile(), PATHINFO_FILENAME).":".$this->getLine().") - ".$this->getMessage();
 		
 		// Write error message to system logger
-		$this->_Logger->addLog($msg);
+		$this->m_logger->addLog($msg);
 		
 		return $msg;
 	}
