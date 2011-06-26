@@ -6,12 +6,12 @@ if (!defined("CURRENT_ROOT"))
 
 class Logger {
 	
-	private $_logs = Array();
+	private $m_logs = array();
 	
-	function __construct ($logs = Array()) {
+	function __construct($logs = array()) {
 		
 		if (is_array($logs))
-			$this->_logs = $logs;
+			$this->m_logs = $logs;
 	}
 	
 	
@@ -21,27 +21,27 @@ class Logger {
 	}
 	
 	
-	public function __toString () {
+	public function __toString() {
 		
-		return @var_dump($this->_logs);
+		return @var_dump($this->m_logs);
 	}
 	
 	
-	final public function addLog ($log = "") {
+	final public function addLog($log) {
 		
 		if (!empty($log))
-			$this->_logs[] = $log;
+			$this->m_logs[] = $log;
 	}
 	
 	
-	final public function writeLogs () {
+	final public function writeLogs() {
 		
-		foreach ($this->_logs as $log)
+		foreach ($this->m_logs as $log)
 			self::log($log);
 	}
 	
 	
-	final static public function log ($log = "") {
+	final static public function log($log) {
 		
 		$line = "";
 		
@@ -55,7 +55,7 @@ class Logger {
 		$line .= $hostname." ";
 		$line .= $log."\n";
 		
-/** @todo Write a log somewhere */
+        /** @todo Write a log somewhere */
 	}
 }
 

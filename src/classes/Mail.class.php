@@ -18,11 +18,11 @@ if (!defined("BULKEXCEPTION"))
 
 class Mail {
 	
-	private $_name;
-	private $_email;
-	private $_id;
+	private $m_name;
+	private $m_email;
+	private $m_id;
 	
-	function __construct ($mailID) {
+	function __construct($mailID) {
 		
 		global $_MySql;
 		
@@ -39,33 +39,33 @@ class Mail {
 		
 		$rowMail = $resMail->fetch_assoc();
 		
-		$this->_name = $rowMail['name'];
-		$this->_email = $rowMail['email'];
-		$this->_id = $rowMail['id'];
+		$this->m_name = $rowMail['name'];
+		$this->m_email = $rowMail['email'];
+		$this->m_id = $rowMail['id'];
 	}
 	
 	
-	public function __toString () {
+	public function __toString() {
 		
 		return get_class($this);
 	}
 	
 	
-	public function getEmail () {
+	public function getEmail() {
 		
-		return $this->_email;
+		return $this->m_email;
 	}
 	
 	
-	public function getName () {
+	public function getName() {
 		
-		return $this->_name;
+		return $this->m_name;
 	}
 	
 	
-	public function getID () {
+	public function getID() {
 		
-		return $this->_id;
+		return $this->m_id;
 	}
 	
 	
@@ -74,7 +74,7 @@ class Mail {
 	 * @param String $email
 	 * @return boolean
 	 */
-	public function update ($name = "", $email = "") {
+	public function update($name = "", $email = "") {
 		
 		global $_MySql;
 		
@@ -87,8 +87,8 @@ class Mail {
 		$this->_email = $_MySql->escape_string($email);
 		
 		$sqlUp = "UPDATE `Mail`
-				  SET `name` = '".$this->_name."', `email` = '".$this->_email."'
-				  WHERE `id` = ".$this->_id.";";
+				  SET `name` = '".$this->m_name."', `email` = '".$this->m_email."'
+				  WHERE `id` = ".$this->m_id.";";
 		
 		return $_MySql->query($sqlUp);
 	}
@@ -97,18 +97,18 @@ class Mail {
 	/** Removes an email from db.Mail
 	 * @return boolean
 	 */
-	public function remove () {
+	public function remove() {
 		
 		global $_MySql;
 		
 		$sqlRm = "DELETE FROM `Mail`
-				  WHERE `id` = ".$this->_id.";";
+				  WHERE `id` = ".$this->m_id.";";
 				  
 		return $_MySql->query($sqlRm);
 	}
 	
 	
-	public static function add ($name = "", $email = "") {
+	public static function add($name = "", $email = "") {
 		
 		global $_MySql;
 		
@@ -127,10 +127,10 @@ class Mail {
 	}
 
 
-	public static function markSent ($mails = Array()) {
+	public static function markSent ($mails = array()) {
 		
 		global $_MySql;
-		$ids = Array();
+		$ids = array();
 		
 		foreach ($mails as $mail)
 			$ids[] = $mail->getId();

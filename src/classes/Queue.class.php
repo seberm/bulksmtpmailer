@@ -22,11 +22,11 @@ if (!defined("QUEUEEXCEPTION"))
 
 class Queue {
 	
-	private $_name;
-	private $_id;
-	private $_sending;
-	private	$_completed;
-	private $_Message = NULL;
+	private $m_name;
+	private $m_id;
+	private $m_sending;
+	private	$m_completed;
+    private $m_message = NULL;
 	
 	
 	function __construct ($queueID) {
@@ -47,13 +47,15 @@ class Queue {
 			
 		$row = $res->fetch_assoc();
 		
-		$this->_id = $row['id'];
-		$this->_name = $row['name'];
-		$this->_sending = $row['isSending'];
-		$this->_completed = $row['isCompleted'];
+		$this->m_id = (int) $row['id'];
+		$this->m_name = $row['name'];
+		$this->m_sending = (bool) $row['isSending'];
+		$this->m_completed = (bool) $row['isCompleted'];
 		
 		try {
-			$this->_Message = new Message($row['messageID']);
+
+			$this->m_message = new Message($row['messageID']);
+
 		} catch (MessageException $e) {
 			throw new QueueException($e->getStack());
 		}
@@ -68,25 +70,25 @@ class Queue {
 	
 	public function getID() {
 		
-		return $this->_id;
+		return $this->m_id;
 	}
 	
 	
 	public function isSending() {
 		
-		return $this->_sending;
+		return $this->m_sending;
 	}
 	
 	
 	public function isCompleted() {
 		
-		return $this->_completed;
+		return $this->m_completed;
 	}
 	
 	
 	public function getMessage() {
 		
-		return $this->_Message;
+		return $this->m_message;
 	}
 }
 
