@@ -7,13 +7,12 @@
 
 if (!defined("CURRENT_ROOT"))
 	define("CURRENT_ROOT", "../", true);
+
+if (!defined("BULKEXCEPTION"))
+     require_once(CURRENT_ROOT."exceptions/BulkException.class.php");
+
 	
-### Interfaces
-if (!defined("BULKERRORS"))
-   require_once(CURRENT_ROOT."interfaces/BulkErrors.interface.php");
-
-
-class DatabaseException extends ErrorException implements BulkErrors {
+final class DatabaseException extends BulkException {
 	
 	public function getStack () {
 		
