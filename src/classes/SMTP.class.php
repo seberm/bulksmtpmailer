@@ -30,8 +30,6 @@ class SMTP {
 
     // Constants
     const TIMEOUT = 30;
-    const AUTHTYPE = "LOGIN";
-    const SMTPTYPE = "ESMTP";
     const DEFAULT_PORT = 25;
     const SSL_PORT = 465;
 
@@ -64,11 +62,6 @@ class SMTP {
 	 * @var string $m_smtpType
 	 */
 	private $m_smtpType;
-	
-	/** Contains current authorization type
-	 * @var string $m_authType
-	 */
-	private $m_authType;
 	
 	/** Connection timeout
 	 * @var int $m_timeout
@@ -163,7 +156,7 @@ class SMTP {
 	 * @param $port Port of the server
 	 * @param $timeout The connection timeout
 	 */
-	function __construct($server, $port, $secure, $timeout = TIMEOUT, $authType = AUTH_TYPE) {
+	function __construct($server, $port, $secure, $timeout = TIMEOUT) {
 		
 		$this->m_server = isset($server) ? $server : "";
 		$this->m_port = isset($port) ? (int) $port : DEFAULT_PORT;
@@ -438,7 +431,7 @@ class SMTP {
         $this->m_logged = true;
 
         /** 
-         * @todo it's neccessary to programme other autorization methods
+         * @todo it's neccary to programme other autorization methods
          */
         /*
 		switch ($this->m_authType) {
@@ -523,10 +516,6 @@ class SMTP {
 	private function identify() {
     
         $server = $this->m_server;
-
-        // Are we using the proxy?
-		if ($this->m_useProxy)
-			$server = $this->m_server;
 
 	    if (!$this->ehlo($server))
             $this->helo($server);    

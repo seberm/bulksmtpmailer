@@ -54,27 +54,9 @@ try {
         $queueID = $row['id'];
 
 
-///// @todo - this only for using without GUI
-		//$sendingActive = $row['isSending'];
-
-
-/*
-		if (isset($_GET['id']) && is_numeric($_GET['id'])) {
-			
-			if ($sendingActive === true)
-				throw new BulkException("BulkMailer is sending right now, please wait ...");
-				
-			$GETQueueID = isset($_GET['id']) ? intval($_GET['id']) : 0;
-			
-			$queueID = Utils::escape($GETQueueID);
-		}
-*/		
-	
 		// If queue ID doesn't exists or is bad, we're exiting normally
 		if ($queueID <= 0)
 			exit(0);
-			//throw new BulkException("queue ID does not exist; exiting ...");
-	
         
         $smtp = new SMTP($_Config['bulk']['smtp']['server'],
                          $_Config['bulk']['smtp']['port'],
@@ -83,11 +65,10 @@ try {
                          $_Config['bulk']['smtp']['authType']);
         
 
-
         // Bulk uses DI model
         $bulk = new Bulk(new Queue($queueID), $smtp, $_Config);
     
-        // Starts the Bulk
+        // Starts the Bulk's sending
         $bulk->start();
         
     } catch (BulkException $e) {
@@ -98,7 +79,7 @@ try {
 } catch (Exception $e) {
 	
 	// Prints all not-caught exceptions
-	echo "Non-caught exception: " . $e->getStack();
+	echo "Non-caught exception: " . $e->getMessage();
 } 
 
 
