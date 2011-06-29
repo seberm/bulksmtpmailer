@@ -1,5 +1,7 @@
 <?php
 
+use Nette\Environment;
+
 abstract class BasePresenter extends Nette\Application\Presenter {
 
     
@@ -14,7 +16,7 @@ abstract class BasePresenter extends Nette\Application\Presenter {
 
     public function handleCronScript() {
 
-        $this->redirectUri(CRON_SCRIPT_URI);
+        $this->redirectUri(Environment::getConfig("application")->cron_uri);
     }
 
 

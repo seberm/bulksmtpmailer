@@ -24,6 +24,7 @@ common:
 
 
 	application:
+		cron_uri = ../../bulk.php
 
 	database:
 		driver = mysql

@@ -23,7 +23,6 @@ Debug::enable();
 // Load configuration from config.neon file
 Environment::loadConfig();
 
-
 // Configure application
 $application = Environment::getApplication();
 $application->errorPresenter = 'Error';
