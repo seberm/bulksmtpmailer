@@ -30,7 +30,7 @@ $_Config = array(
 
 ### Enable/Disable GUI
 # If 'gui' is enabled, following configuration of 'bulk' array is NOT necessary. It will use a configuration stored in database (DB.SystemSettings)
-"gui" => true // true/false
+#"gui" => true // true/false
 
 ),
 
