@@ -39,6 +39,12 @@ try {
         if (!defined("BULK"))
             (@include_once(CURRENT_ROOT."classes/Bulk.class.php")) or die ("Cannot load Bulk class!");
             
+        /* 
+         * Limit is set to 1
+         *
+         * When messages are sent to all e-mails,
+         * next queue will start to sending.
+         */
         $sql = "SELECT `id`, `isSending`
                 FROM `Queue`
                 WHERE `isSending` = true AND `isCompleted` = false
@@ -54,21 +60,20 @@ try {
         $queueID = $row['id'];
 
 
-		// If queue ID doesn't exists or is bad, we're exiting normally
+		// If queue ID does not exists or is bad, we're exiting normally
 		if ($queueID <= 0)
-			exit(0);
+			exit(0); // Exited normally
         
         $smtp = new SMTP($_Config['bulk']['smtp']['server'],
                          $_Config['bulk']['smtp']['port'],
                          $_Config['bulk']['smtp']['secure'],
-                         $_Config['bulk']['smtp']['timeout'],
-                         $_Config['bulk']['smtp']['authType']);
-        
+                         $_Config['bulk']['smtp']['timeout']
+                        );
 
-        // Bulk uses DI model
+        // Bulk uses DI model (constructor injection)
         $bulk = new Bulk(new Queue($queueID), $smtp, $_Config);
     
-        // Starts the Bulk's sending
+        // Starts the sending
         $bulk->start();
         
     } catch (BulkException $e) {
