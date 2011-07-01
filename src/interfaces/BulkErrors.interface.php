@@ -5,15 +5,12 @@
  * @author Otto Sabart <seberm@gmail.com>
  */
 
-if (!defined("CURRENT_ROOT"))
-	define("CURRENT_ROOT", "../", true);
 
-
-interface BulkErrors {
+interface BulkErrorsInterface {
 
 	public function getStack();
 }
 
 
-define("BULKERRORS", true, true); 
+define("BULKERRORSINTERFACE", true, true); 
 ?>

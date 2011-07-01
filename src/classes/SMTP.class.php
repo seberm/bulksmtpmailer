@@ -15,9 +15,17 @@ if (!defined("CURRENT_ROOT"))
 
 ### Exceptions
 if (!defined("SMTPEXCEPTION"))
-   require_once(CURRENT_ROOT."exceptions/SMTPException.class.php");
+    require_once(CURRENT_ROOT."exceptions/SMTPException.class.php");
+
+### Interfaces
+if (!defined("MAILERINTERFACE"))
+    require_once(CURRENT_ROOT."interfaces/Mailer.interface.php");  
+
+if (!defined("SOCKETINTEFRACE"))
+    require_once(CURRENT_ROOT."interfaces/Socket.interface.php");
 
 
+### Classes 
 if (!defined("UTILS"))
    require_once(CURRENT_ROOT."classes/Utils.class.php");
 
@@ -26,7 +34,7 @@ if (!defined("MESSAGE"))
    require_once(CURRENT_ROOT."classes/Message.class.php");
 
 
-class SMTP {
+class SMTP implements MailerInterface, SocketInterface {
 
     // Constants
     const TIMEOUT = 30;
@@ -337,58 +345,6 @@ class SMTP {
         return $s;
 	}
 	
-	
-	/** Reads a line from 0 to $chars chars
-	 * @param string $line
-	 * @return int
-	 */
-    /*
-	private function readLine ($line) {
-		
-		if (empty($line))
-			return "";
-
-		// Configuration of SMTP type	
-		if (preg_match("/220\s[\w-.]+\s(?P<opt>\w+)/", $line, $matches)) {
-
-			if (in_array($matches['opt'], $this->SMTP_TYPES, true))
-				$this->m_smtpType = $matches['opt'];
-			else $this->m_smtpType = SMTP_SMTPTYPE;
-		}
-
-		// Configuration of supported authorization types
-		if (preg_match("/250-(?P<cmd>\w)\s(?P<opt>\w+)/", $line, $matches)) {
-			
-			if (is_null($matches))
-				return 0;
-			
-			switch ($matches['cmd']) {
-				
-				case "AUTH":
-					
-					$this->m_supportedAuthTypes = explode(" ", strtoupper($matches['opt']));
-					break;
-					
-				case "SIZE":
-					
-					//$this->_xxx = $matches['opt'];
-					break;
-				
-				case "VRFY":
-				case "ETRN":
-				case "XVERP":
-				case "PIPELINING":
-				case "STARTTLS":
-				default:
-					break;
-			}
-		}
-	
-		return ((int) substr(trim($line), 0, 3));
-	}
-	
-     */
-
 	
 	/** Returns a server response text by given response id
 	 * @param int $key

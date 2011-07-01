@@ -10,7 +10,7 @@ if (!defined("CURRENT_ROOT"))
 		
 
 ### Interfaces
-if (!defined("BULKERRORS"))
+if (!defined("BULKERRORSINTERFACE"))
    require_once(CURRENT_ROOT."interfaces/BulkErrors.interface.php");
    
  
@@ -19,7 +19,7 @@ if (!defined("LOGGER"))
    require_once(CURRENT_ROOT."classes/Logger.class.php");
    
 
-class BulkException extends ErrorException implements BulkErrors {
+class BulkException extends ErrorException implements BulkErrorsInterface {
 	
 	private $m_logger = null;
 
