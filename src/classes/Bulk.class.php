@@ -56,14 +56,14 @@ private $m_config = array();
 		global $_MySql;
         $this->m_config = $options;
 
-		if ($this->m_config['system']['gui'])
-			$this->setMySQLconfiguration();
+		//if ($this->m_config['system']['gui'])
+		//	$this->setMySQLconfiguration();
 
 		$this->m_queue = $queue;
         $this->m_smtp = $smtp;
 		$this->m_message = $this->m_queue->getMessage();
-        $this->m_message->setHeader("X-Mailer", $this->m_config['bulk']['mailer'])
-                        ->setPriority(3);
+        $this->m_message->setMailer($this->m_config['bulk']['mailer'])
+                        ->setPriority($this->m_config['bulk']['priority']);
 
 		$sqlMails = "SELECT `id` FROM `Mail`
 					 WHERE `sent` = false
