@@ -1,47 +1,5 @@
-socket_set_timeout($this->connection, 0, 250000); /// Use it?
-
-it's neccessary to test smtp auth types - digest-md5, cram-md5, gssapi
-is src/gui/classes/Error.class.php necessary ?
-
-dodelat tridu src/gui/classes/Error.class.php!... nevypisovat chyby v jednotlivych modulech, ale vse resit pres tuto tridu, ktera chyby nakonec vsechny vypise; k tride pak definovat do konfiguracniho souboru pole, kde se bude dat zapnout nebo vypnout logovani do souboru... nebo logovani na obrazovku
-udelat gui administraci pro vice smtp serveru
-
-
-do grafickeho rozhrani pridat volby pro proxy server..a vubec vsechno co tam pribylo
-
-
 asi se neodesilaji emaily na otik10@seznam.cz
-
-
-pozdeji vytvorit tridu Queue, ktera se bude starat o frontu posilani mailu
-
-
-
-dodelat napovedu v modulu systemManager... v GUI.. -> dodelat pres JS a CSS bublinu..a napsat texty s napovedou (okopcit je z conf. souboru)
-
-
-pri pridavani queue a zatrhnuti automatickeho startu.. se nezapise isSending = true!
-
-
-
-
-
-vyzkouset jestli je tohle spravna ochrana:
-$sql = "SELECT `id`, `Name`, `MessageID`, `isSending`, `isCompleted`
-				FROM `Queue`
-				WHERE `id` = ".$queueID.";";
-					
-		$res = $_MySql->query($sql);
-
-		if (!$res)
-			throw new QueueException("Queue (ID: ".$queueID.") does not exists; exiting ...");
-
-jestli to upozorni v pripade..ze v DB nebudou zadne radky v Queue
-
-
-
 bulk.class.php - radek 308 a 322 ... nedelat to pres ziskani ID ale asi primo naprogramovat public fce do queue, ktere to vyresi v queue modulu...
-
 
 jeste nevime..jestli fronty fungujou..jestli se po doodesilani prvni zacne odesilat druha
 
