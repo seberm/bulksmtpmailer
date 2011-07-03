@@ -23,11 +23,12 @@ class Message {
     const ENCODING_8BIT             = "8bit";
     const ENCODING_QUOTED_PRINTABLE = "quoted-printable";
 
+    const MESSAGE_PRIORITY = 3;
+
     const EOL = "\r\n";
 
     private $m_headers = array();
 
-	private $m_subject;
 	private $m_text;
 	private $m_id;
 	
@@ -65,9 +66,9 @@ class Message {
 
     // Getters	
 	public function getText() { return $this->m_text; }
-	public function getSubject() { return $this->m_subject; }
     public function getID() { return $this->m_id; }
     public function getHeaders() { return $this->m_headers; }
+	public function getSubject() { return $this->getHeader("Subject"); }
 
 
     public function getHeader($name) {
@@ -79,7 +80,7 @@ class Message {
     // Setters
     public function setSubject($subject) {
 
-        $this->m_subject = $subject;
+        $this->setHeader("Subject", $subject);
         return $this;
     }
 
@@ -93,14 +94,20 @@ class Message {
 
     public function setPriority($priority) {
 
-        $this->setHeader("X-Priority", (int) $priority);
+        $this->setHeader("X-Priority", isset($priority) ? (int) $priority) : MESSAGE_PRIORITY;
         return $this;
+    }
+
+
+    public function setMailer($mailer) {
+
+        $this->setHeader("X-Mailer", $mailer);
     }
 
 
     public function setContentType($type) {
 
-        $this->setHeader("Content-Type", $type . "UTF-8");
+        $this->setHeader("Content-Type", $type . "; charset=UTF-8");
         return $this;
     }
 
@@ -159,6 +166,8 @@ class Message {
 
 
     public function generateMimeMessage() {
+
+        $this->buildMessage();
 
         $output = "";
         $bound = "--------" . Utils::randomString();
