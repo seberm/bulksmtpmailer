@@ -53,6 +53,8 @@ $_Config = array(
 ### Message content type
 "contentType" => "html", // plain | html
 
+### Message priority
+"priority" => 3,
 
 
 
