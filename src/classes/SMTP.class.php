@@ -171,10 +171,6 @@ class SMTP implements MailerInterface, SocketInterface {
 		$this->m_timeout = (int) $timeout; 
         $this->m_secure = $secure;
 		
-		if (in_array($authType, $this->SMTP_AUTH_TYPES, true))
-			$this->m_authType = $authType;
-		else $this->m_authType = AUTH_TYPE;
-
         if (!$this->m_port)
             $this->m_port = ($this->m_secure === "ssl") ? SSL_PORT : $port;
 	}
