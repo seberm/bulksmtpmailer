@@ -13,5 +13,5 @@ interface MailerInterface {
 };
 
 
-define("MailerInterface", true, true);
+define('MailerInterface', true, true);
 ?>

@@ -7,17 +7,17 @@
  */
 
 
-if (!defined("CURRENT_ROOT"))
-	define("CURRENT_ROOT", "../", true);
+if (!defined('CURRENT_ROOT'))
+	define('CURRENT_ROOT', '../', true);
 
 ### Classes
-if (!defined("MESSAGE"))
-	require_once (CURRENT_ROOT."classes/Message.class.php");
+if (!defined('MESSAGE'))
+	require_once (CURRENT_ROOT.'classes/Message.class.php');
 	
 
 ### Exceptions
-if (!defined("QUEUEEXCEPTION"))
-   require_once(CURRENT_ROOT."exceptions/QueueException.class.php");
+if (!defined('QUEUEEXCEPTION'))
+   require_once(CURRENT_ROOT.'exceptions/QueueException.class.php');
    
 
 class Queue {
@@ -36,14 +36,14 @@ class Queue {
 		if (!is_numeric($queueID))
 			$queueID = 0;
 		
-		$sql = "SELECT `id`, `name`, `messageID`, `isSending`, `isCompleted`
+		$sql = 'SELECT `id`, `name`, `messageID`, `isSending`, `isCompleted`
 				FROM `Queue`
-				WHERE `id` = ".$queueID.";";
+				WHERE `id` = '.$queueID.';';
 
 		$res = $_MySql->query($sql);
 
 		if ($res->num_rows == 0)
-			throw new QueueException("Queue (ID: ".$queueID.") does not exists; exiting ...");
+			throw new QueueException('Queue (ID: '.$queueID.') does not exists; exiting ...');
 			
 		$row = $res->fetch_assoc();
 		
@@ -92,5 +92,5 @@ class Queue {
 	}
 }
 
-define("QUEUE", true, true);
+define('QUEUE', true, true);
 ?> 

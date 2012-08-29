@@ -13,7 +13,7 @@ final class Utils {
 		$atom = '[-a-z0-9!\#\$%&\'*+/=?^_`{|}~]';
 		$domain = '[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])';
 
-		return preg_match("#^$atom+(\\.$atom+)*@($domain?\\.)+$domain\$#", $email);
+		return preg_match('#^$atom+(\\.$atom+)*@($domain?\\.)+$domain\$#', $email);
 	}
 	
 	
@@ -30,9 +30,9 @@ final class Utils {
 
 		if (strlen($string) > $len) {
 			$cut = substr($string, 0, $len);
-			$lastSpace = strrpos($cut, " ");
+			$lastSpace = strrpos($cut, ' ');
 
-			$result = substr($cut, 0, $lastSpace)."...";
+			$result = substr($cut, 0, $lastSpace).'...';
 
 			return $result;
 			
@@ -58,5 +58,5 @@ final class Utils {
 	
 }
 
-define("UTILS", true, true);
+define('UTILS', true, true);
 ?>

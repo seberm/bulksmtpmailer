@@ -9,29 +9,29 @@
  * Some methods are inspired by Nette. Thank you David Grudl.
  */
 
-if (!defined("CURRENT_ROOT"))
-	define("CURRENT_ROOT", "../", true);
+if (!defined('CURRENT_ROOT'))
+	define('CURRENT_ROOT', '../', true);
 
 
 ### Exceptions
-if (!defined("SMTPEXCEPTION"))
-    require_once(CURRENT_ROOT."exceptions/SMTPException.class.php");
+if (!defined('SMTPEXCEPTION'))
+    require_once(CURRENT_ROOT.'exceptions/SMTPException.class.php');
 
 ### Interfaces
-if (!defined("MAILERINTERFACE"))
-    require_once(CURRENT_ROOT."interfaces/Mailer.interface.php");  
+if (!defined('MAILERINTERFACE'))
+    require_once(CURRENT_ROOT.'interfaces/Mailer.interface.php');  
 
-if (!defined("SOCKETINTEFRACE"))
-    require_once(CURRENT_ROOT."interfaces/Socket.interface.php");
+if (!defined('SOCKETINTEFRACE'))
+    require_once(CURRENT_ROOT.'interfaces/Socket.interface.php');
 
 
 ### Classes 
-if (!defined("UTILS"))
-   require_once(CURRENT_ROOT."classes/Utils.class.php");
+if (!defined('UTILS'))
+   require_once(CURRENT_ROOT.'classes/Utils.class.php');
 
 
-if (!defined("MESSAGE"))
-   require_once(CURRENT_ROOT."classes/Message.class.php");
+if (!defined('MESSAGE'))
+   require_once(CURRENT_ROOT.'classes/Message.class.php');
 
 
 class SMTP implements MailerInterface, SocketInterface {
@@ -114,48 +114,48 @@ class SMTP implements MailerInterface, SocketInterface {
 	/** SMTP Auth methods which are supported by this code
 	 * @var array $AUTH_TYPES
 	 */
-    private $SMTP_AUTH_TYPES = array("LOGIN",
-                             "PLAIN",
-                          /* "DIGEST-MD5", 
-                             "CRAM-MD5",
-                             "GSSAPI", */
+    private $SMTP_AUTH_TYPES = array('LOGIN',
+                             'PLAIN',
+                          /* 'DIGEST-MD5', 
+                             'CRAM-MD5',
+                             'GSSAPI', */
                             );
 	
 	/** Possible SMTP types
      * @var array $SMTP_TYPES
      */
-    private $SMTP_TYPES = array("SMTP",
-                                "ESMTP",
+    private $SMTP_TYPES = array('SMTP',
+                                'ESMTP',
                                );
 	
 	/** Definition of possible errors
 	 * @var array SMTP::RESPONSES
 	 */
 	private $SMTP_RESPONSES = array(
-								200 => "(nonstandard success response, see rfc876)",
-								211 => "System status, or system help reply",
-								214 => "Help message",
-								220 => "Service ready",
-						  		221 => "Service closing transmission channel",
-								250 => "Requested mail action okay, completed",
-								251 => "User not local",
-								354 => "Start mail input; end with <EOL>.<EOL>",
-								421 => "Service not available, closing transmission channel",
-								450 => "Requested mail action not taken: mailbox unavailable",
-								451 => "Requested action aborted: local error in processing",
-								452 => "Requested action not taken: insufficient system storage",
-								500 => "Syntax error, command unrecognised",
-								501 => "Syntax error in parameters or arguments",
-								502 => "Command not implemented",
-								503 => "Bad sequence of commands",
-								504 => "Command parameter not implemented",
-								521 => "System does not accept mail (see rfc1846)",
-								530 => "Access denied (???a Sendmailism)",
-								550 => "Requested action not taken: mailbox unavailable",
-								551 => "User not local",
-								552 => "Requested mail action aborted: exceeded storage allocation",
-								553 => "Requested action not taken: mailbox name not allowed",
-                                554 => "Transaction failed",
+								200 => '(nonstandard success response, see rfc876)',
+								211 => 'System status, or system help reply',
+								214 => 'Help message',
+								220 => 'Service ready',
+						  		221 => 'Service closing transmission channel',
+								250 => 'Requested mail action okay, completed',
+								251 => 'User not local',
+								354 => 'Start mail input; end with <EOL>.<EOL>',
+								421 => 'Service not available, closing transmission channel',
+								450 => 'Requested mail action not taken: mailbox unavailable',
+								451 => 'Requested action aborted: local error in processing',
+								452 => 'Requested action not taken: insufficient system storage',
+								500 => 'Syntax error, command unrecognised',
+								501 => 'Syntax error in parameters or arguments',
+								502 => 'Command not implemented',
+								503 => 'Bad sequence of commands',
+								504 => 'Command parameter not implemented',
+								521 => 'System does not accept mail (see rfc1846)',
+								530 => 'Access denied (???a Sendmailism)',
+								550 => 'Requested action not taken: mailbox unavailable',
+								551 => 'User not local',
+								552 => 'Requested mail action aborted: exceeded storage allocation',
+								553 => 'Requested action not taken: mailbox name not allowed',
+                                554 => 'Transaction failed',
                             );
 								
 	
@@ -172,7 +172,7 @@ class SMTP implements MailerInterface, SocketInterface {
         $this->m_secure = $secure;
 		
         if (!$this->m_port)
-            $this->m_port = ($this->m_secure === "ssl") ? SSL_PORT : $port;
+            $this->m_port = ($this->m_secure === 'ssl') ? SSL_PORT : $port;
 	}
 	
 	
@@ -233,7 +233,7 @@ class SMTP implements MailerInterface, SocketInterface {
 		}
         
         // Should be connection secured via SSL?
-        $server = (($this->m_secure === "ssl") ? "ssl://" : "") . $server;
+        $server = (($this->m_secure === 'ssl') ? 'ssl://' : '') . $server;
 		
         $ret = $this->m_socket = @fsockopen($server, $port, $errno, $errstr, $this->m_timeout);
 		
@@ -279,7 +279,7 @@ class SMTP implements MailerInterface, SocketInterface {
 	public function setLogin($login) {
 		
 		if (empty($login))
-			throw new SMTPException("you're setting an empty login");
+			throw new SMTPException('you\'re setting an empty login');
 		
 		$this->m_login = $login;
 
@@ -314,7 +314,7 @@ class SMTP implements MailerInterface, SocketInterface {
 
             $returnedCode = (int) $this->read();
             if (!in_array($returnedCode, (array) $expectedCode))
-                throw new SMTPException("SMTP server did not accept " . $command . "; " . $this->getResponseText($returnedCode));
+                throw new SMTPException('SMTP server did not accept ' . $command . '; ' . $this->getResponseText($returnedCode));
         }
 	}
 	
@@ -328,7 +328,7 @@ class SMTP implements MailerInterface, SocketInterface {
 		$s = "";
 		
 		if (!$this->isConnected())
-			throw new SMTPException("server is not connected");
+			throw new SMTPException('server is not connected');
 			
         while (($line = fgets($this->m_socket, 1e3)) != NULL) {
 				
@@ -353,7 +353,7 @@ class SMTP implements MailerInterface, SocketInterface {
 		if (array_key_exists($key, $this->SMTP_RESPONSES))
 			$responseText = $this->SMTP_RESPONSES[$key];
 		else
-			$responseText = "unknown SMTP response";
+			$responseText = 'unknown SMTP response';
 		
 		
 		return $responseText;
@@ -369,14 +369,14 @@ class SMTP implements MailerInterface, SocketInterface {
 		$login = $this->m_login;
 		$password = $this->m_password;
 		
-        if ($this->m_secure === "tls") {
+        if ($this->m_secure === 'tls') {
 
-            $this->write("STARTTLS", 220);
+            $this->write('STARTTLS', 220);
             if (!stream_socket_enable_crypto($this->m_socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT))
-                throw new SMTPException("unable to connect via TLS");
+                throw new SMTPException('unable to connect via TLS');
         }
 
-        $this->write("AUTH LOGIN", 334);
+        $this->write('AUTH LOGIN', 334);
         $this->write(base64_encode($login), 334);
         $this->write(base64_encode($password), 235);
 
@@ -388,12 +388,12 @@ class SMTP implements MailerInterface, SocketInterface {
         /*
 		switch ($this->m_authType) {
 
-			case "PLAIN":
+			case 'PLAIN':
 			
 				// It's neccessary to keep this syntax: 'username\0username\0password'
-				$log = base64_encode($login."\0".$login."\0".$password);
+				$log = base64_encode($login.'\0'.$login.'\0'.$password);
 				
-				$this->execute("AUTH PLAIN".$log);
+				$this->execute('AUTH PLAIN'.$log);
 				$responseID = $this->readLine($this->getLine());
 				if ($responseID != 235)
 					throw new SmtpException($this->getResponseText($responseID));
@@ -402,15 +402,15 @@ class SMTP implements MailerInterface, SocketInterface {
 				
 				break;
 			
-			//case "DIGEST-MD5":
-			//case "CRAM-MD5":
-			//case "GSSAPI":
+			//case 'DIGEST-MD5':
+			//case 'CRAM-MD5':
+			//case 'GSSAPI':
 			
-			case "LOGIN":
+			case 'LOGIN':
 			default:
 				$loginENC = base64_encode($login);
 				$passwordENC = base64_encode($password);
-				$this->execute("AUTH LOGIN");
+				$this->execute('AUTH LOGIN');
 
 				$this->execute($loginENC);
 				$responseID = $this->readLine($this->getLine());
@@ -439,12 +439,12 @@ class SMTP implements MailerInterface, SocketInterface {
 	 */
 	private function helo($server) {
         
-        $this->write("HELO " . $server);
+        $this->write('HELO ' . $server);
 
         if ((int) $this->read() !== 250)
             return false;
 
-        $this->m_smtpType = "SMTP";
+        $this->m_smtpType = 'SMTP';
 		return true;
 
 	}
@@ -455,12 +455,12 @@ class SMTP implements MailerInterface, SocketInterface {
 	 */
 	private function ehlo($server) {
 		
-		$this->write("EHLO " . $server);
+		$this->write('EHLO ' . $server);
 
         if ((int) $this->read() !== 250)
             return false;
 
-        $this->m_smtpType = "ESMTP";
+        $this->m_smtpType = 'ESMTP';
 		return true;
 	}
 	
@@ -476,7 +476,7 @@ class SMTP implements MailerInterface, SocketInterface {
 	
 	private function quit() {
 		
-		$this->write("QUIT", 221);
+		$this->write('QUIT', 221);
 	}
 	
 	
@@ -486,18 +486,18 @@ class SMTP implements MailerInterface, SocketInterface {
         global $_Config;
 
 		if (!$this->isLogged())
-			throw new SMTPException("you're not logged in");
+			throw new SMTPException('you\'re not logged in');
 		
 		if (!Utils::isEmail($mail->getEmail()))
-			throw new SMTPException("bad email format: " . $mail->getEmail());
+			throw new SMTPException('bad email format: ' . $mail->getEmail());
 
-        $this->write("MAIL FROM:<" . $_Config['bulk']['from'] . ">", 250);
-        $this->write("RCPT TO:<" . $mail->getEmail() . ">", array(250, 251));
-        $this->write("DATA", 354);
+        $this->write('MAIL FROM:<' . $_Config['bulk']['from'] . '>', 250);
+        $this->write('RCPT TO:<' . $mail->getEmail() . '>', array(250, 251));
+        $this->write('DATA', 354);
 
         $data = $message->generateMimeMessage();
         $this->write($data);
-        $this->write(".", 250);
+        $this->write('.', 250);
 	}
 	
 	
@@ -512,6 +512,6 @@ class SMTP implements MailerInterface, SocketInterface {
 }
 
 
-define("SMTP", true, true);
+define('SMTP', true, true);
 
 ?> 

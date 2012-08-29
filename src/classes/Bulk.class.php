@@ -7,30 +7,34 @@
  */
 
 
-if (!defined("CURRENT_ROOT"))
-	define("CURRENT_ROOT", "../", true);
+if (!defined('CURRENT_ROOT'))
+	define('CURRENT_ROOT', '../', true);
 
 
 ### Classes
-if (!defined("MAIL"))
-	require_once (CURRENT_ROOT."classes/Mail.class.php");
+if (!defined('MAIL'))
+	require_once (CURRENT_ROOT.'classes/Mail.class.php');
 	
-if (!defined("MESSAGE"))
-	require_once (CURRENT_ROOT."classes/Message.class.php");
+if (!defined('MESSAGE'))
+	require_once (CURRENT_ROOT.'classes/Message.class.php');
 
-if (!defined("SMTP"))
-	require_once (CURRENT_ROOT."classes/SMTP.class.php");
+if (!defined('SMTP'))
+	require_once (CURRENT_ROOT.'classes/SMTP.class.php');
 	
-if (!defined("QUEUE"))
-	require_once (CURRENT_ROOT."classes/Queue.class.php");
+if (!defined('QUEUE'))
+	require_once (CURRENT_ROOT.'classes/Queue.class.php');
 
 ### Exceptions
-if (!defined("BULKEXCEPTION"))
-   require_once(CURRENT_ROOT."exceptions/BulkException.class.php");
+if (!defined('BULKEXCEPTION'))
+   require_once(CURRENT_ROOT.'exceptions/BulkException.class.php');
    
 
 class Bulk {
 	
+    /**
+     * Array of e-mails
+     * @var array $m_mails
+     */
 	private $m_mails = array();
 	
 	/** Pointer to instance of Smtp class
@@ -48,16 +52,12 @@ class Bulk {
 	 */
 	private $m_message = null;
 	
-private $m_config = array();
+    private $m_config = array();
 
 	
 	public function __construct($queue, $smtp, $options) {
-		
 		global $_MySql;
         $this->m_config = $options;
-
-		//if ($this->m_config['system']['gui'])
-		//	$this->setMySQLconfiguration();
 
 		$this->m_queue = $queue;
         $this->m_smtp = $smtp;
@@ -65,18 +65,16 @@ private $m_config = array();
         $this->m_message->setMailer($this->m_config['bulk']['mailer'])
                         ->setPriority($this->m_config['bulk']['priority']);
 
-		$sqlMails = "SELECT `id` FROM `Mail`
+		$sqlMails = 'SELECT `id` FROM `Mail`
 					 WHERE `sent` = false
-					 LIMIT 0, ".$this->m_config['bulk']['batch'].";";
+					 LIMIT 0, '.$this->m_config['bulk']['batch'].';';
 
 		$resMails = $_MySql->query($sqlMails);
 		
 		if ($resMails->num_rows == 0) {
-			
 			// Signal stopped is emitted
 			$this->stopped();
-			
-			throw new BulkException("no mails to send in database");
+			throw new BulkException('no mails to send in database');
 		}
 			
 		while ($rowMail = $resMails->fetch_assoc())
@@ -84,19 +82,15 @@ private $m_config = array();
 
         // Checks if the proxy option is enabled
 		if ($this->m_config['bulk']['smtp']['useProxy'] === true) {
-			
 			$server = $this->m_config['bulk']['smtp']['proxyServer'];
 			$port = $this->m_config['bulk']['smtp']['proxyPort'];
 			$this->m_smtp->useProxy($server, $port);
 		}
 								
 		try {
-			
 			$this->m_smtp->setLogin($this->m_config['bulk']['smtp']['login'])
 			             ->setPassword($this->m_config['bulk']['smtp']['password']);
-
 		} catch (SmtpException $e) {
-			
 			throw new BulkException($e->getStack());
 		}
 	}
@@ -104,77 +98,71 @@ private $m_config = array();
 	
     /** @todo Celou fci poupravit, aby fungovala s administracnim grafickym rozhranim */
 	private function setMySQLConfiguration() {
-		
 		global $_MySql;
 		
-		$sql = "SELECT * FROM `SystemSettings`";
+		$sql = 'SELECT * FROM `SystemSettings`';
 		$res = $_MySql->query($sql);
 		
 		$this->_config['bulk']['smtp'] = array();
 		while ($row = $res->fetch_assoc()) {
-
-				$item = $row['item'];
-				$value = is_numeric($row['value']) ? (int) $row['value'] : $row['value'];
-				
-				// If there isn't a configuration in DB.SystemSettings it will use a configuration from the config file (config.inc.php)
-				if (empty($value) || ($value == 0))
-					continue;
-				
-				if (preg_match('/^smtp/', $item)) {
-					
-					$confItem = lcfirst(substr($item, 4));
-					$_config['bulk']['smtp'][$confItem] = $value;
-				} else {
-					
-					$_config['bulk'][$item] = $value;
-				}
+            $item = $row['item'];
+            $value = is_numeric($row['value']) ? (int) $row['value'] : $row['value'];
+            
+            // If there isn't a configuration in DB.SystemSettings it will use a configuration from the config file (config.inc.php)
+            if (empty($value) || ($value == 0))
+                continue;
+            
+            if (preg_match('/^smtp/', $item)) {
+                $confItem = lcfirst(substr($item, 4));
+                $_config['bulk']['smtp'][$confItem] = $value;
+            } else {
+                $_config['bulk'][$item] = $value;
+            }
 		}
 	}
 	
 	
 	public function __toString () {
-		
 		return get_class($this);
 	}
 	
 
 /*    
 	private function getBody () {
-		
-		$output = "";
+		$output = '';
 		
         $bound = $this->_config['bulk']['bound'].time();
 		///// toto je plain text kus zpravy
-		$output .= "Content-Type: multipart/alternative; boundary=\"".$bound."\"".Message::EOL;
+		$output .= 'Content-Type: multipart/alternative; boundary=\''.$bound.'\''.Message::EOL;
 
-		$output .= "This is a multi-part message in MIME format.".Message::EOL;
-		$output .= "--".$bound.Message::EOL;
-		$output .= "Content-Type: text/plain; charset=".$this->_config['bulk']['charset'].Message::EOL;
-		$output .= "Content-Transfer-Encoding: 7bit".Message::EOL;
+		$output .= 'This is a multi-part message in MIME format.'.Message::EOL;
+		$output .= '--'.$bound.Message::EOL;
+		$output .= 'Content-Type: text/plain; charset='.$this->_config['bulk']['charset'].Message::EOL;
+		$output .= 'Content-Transfer-Encoding: 7bit'.Message::EOL;
 		
-		$output .= "Zapnete zobrazovani obrazku.".Message::EOL;
-		$output .= "--".$bound.Message::EOL;
+		$output .= 'Zapnete zobrazovani obrazku.'.Message::EOL;
+		$output .= '--'.$bound.Message::EOL;
 				
         $bound2 = $this->_config['bulk']['bound'].(time() + 5);
-		$output .= "Content-Type: multipart/related; boundary=\"".$bound2."\"".Message::EOL;
+		$output .= 'Content-Type: multipart/related; boundary=\''.$bound2.'\''.Message::EOL;
 
 ///// this is the HTML part of the message
 		
-		$output .= "--".$bound2.Message::EOL;
-		$output .= "Content-Type: text/html; charset=".$this->_config['bulk']['charset'].Message::EOL;
-		$output .= "Content-Transfer-Encoding: 7bit".Message::EOL;
+		$output .= '--'.$bound2.Message::EOL;
+		$output .= 'Content-Type: text/html; charset='.$this->_config['bulk']['charset'].Message::EOL;
+		$output .= 'Content-Transfer-Encoding: 7bit'.Message::EOL;
 		$output .= $this->getMessage().Message::EOL.CRLF;
 
 /*
 ////picture attachments (just test) - it's working!
-		$output .= "--".$bound2.Message::EOL;
-		$output .= "Content-Type: image/jpeg; name=\"nevim.jpg\"".Message::EOL;
+		$output .= '--'.$bound2.Message::EOL;
+		$output .= 'Content-Type: image/jpeg; name=\'nevim.jpg\''.Message::EOL;
 	
-		$output .= "Content-Transfer-Encoding: base64".Message::EOL;
-		$output .= "Content-ID: <part1.123456@xxx.com>".Message::EOL;
-		$output .= "Content-Disposition: attachment; filename=\"nevim.jpg\"".Message::EOL.CRLF;
+		$output .= 'Content-Transfer-Encoding: base64'.Message::EOL;
+		$output .= 'Content-ID: <part1.123456@xxx.com>'.Message::EOL;
+		$output .= 'Content-Disposition: attachment; filename=\'nevim.jpg\''.Message::EOL.CRLF;
 		
-$output .= "
+$output .= '
 R0lGODlhQwBEAHcAMSH+GlNvZnR3YXJlOiBNaWNyb3NvZnQgT2ZmaWNlACH5BAEAAAAALAAAAABD
 AEQAhwAAAAAAAAAAMwAAZgAAmQAAzAAA/wAzAAAzMwAzZgAzmQAzzAAz/wBmAABmMwBmZgBmmQBm
 zABm/wCZAACZMwCZZgCZmQCZzACZ/wDMAADMMwDMZgDMmQDMzADM/wD/AAD/MwD/ZgD/mQD/zAD/
@@ -228,12 +216,11 @@ is3dlSbbKfrlHX2F7E1oH/neHJbUPis7ZDDC2iXdC7ekq/xfBXWw3HVx5RcH/u7TsEDeyfPjPl1s
 74qrNLnI9iMXQvvvsXB6zIDO2PsWlbFwh5Hfel3u+Gl8izP63njYeG7ivg0sZ34zWSOVPk1BSmBd
 l4P852DMLINVrvOXtNTlyDv5mHfbbzIXnSNFBnnNld5dZT/dIZSOOn0X/sU9Xh0vATAzzwXCZ4GU
 +etoT3tBAgIAOw==
-".Message::EOL;
+'.Message::EOL;
 
-		$output .= "--".$bound2."--".Message::EOL.CRLF;
+		$output .= '--'.$bound2.'--'.Message::EOL.CRLF;
 */
-/*		$output .= "--".$bound."--".Message::EOL;
-		
+/*		$output .= '--'.$bound.'--'.Message::EOL;
 		
 		return $output;
 	}
@@ -241,72 +228,62 @@ l4P852DMLINVrvOXtNTlyDv5mHfbbzIXnSNFBnnNld5dZT/dIZSOOn0X/sU9Xh0vATAzzwXCZ4GU
  
 /*	
 	public function getMessage() {
-		
 		global $_config;
-		$output = "";
+		$output = '';
 		
-		$output .= "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">";
-		$output .= "<html>";
-		$output .= "<head>";
-		$output .= "<meta http-equiv=\"content-type\" content=text/html; charset=".$_config['bulk']['charset']."\">";
-		$output .= "</head>";
-		$output .= "<body>";
+		$output .= '<!DOCTYPE HTML PUBLIC \'-//W3C//DTD HTML 4.01 Transitional//EN\'>';
+		$output .= '<html>';
+		$output .= '<head>';
+		$output .= '<meta http-equiv=\'content-type\' content=text/html; charset='.$_config['bulk']['charset'].'\'>';
+		$output .= '</head>';
+		$output .= '<body>';
 
 		$output .= $this->_Message->getText();
 
-		$output .= "</body>";
-		$output .= "</html>";
+		$output .= '</body>';
+		$output .= '</html>';
 
-//<img alt="nezobrazuje se obrazek" title="tooooooltip" src="cid:part1.123456@xxx.com" height="75" width="100">
+//<img alt='nezobrazuje se obrazek' title='tooooooltip' src='cid:part1.123456@xxx.com' height='75' width='100'>
 
 		return $output;
 	}
  */	
 	
 	public function sendBatch () {
-		
 		try {
-
 			// Connect to the SMTP server
 			if ($this->m_smtp->connect()) {
-			
 				foreach ($this->m_mails as $mail)
 					$this->m_smtp->send($this->m_message, $mail);
 				
 				Mail::markSent($this->m_mails);
-				
 				$this->m_smtp->disconnect();
-
 			} else {
-				
                 /**
                  * We can send emails alternatively, bud it's the bad way (we can get an error from server).
                  * This sending method uses PHP function mail.
                  */
 				foreach ($this->m_mails as $mail) {
-
-                    $headers = "";
+                    $headers = '';
                     foreach ($this->m_message->getHeaders() as $header => $value)
-                        $headers .= $header . ":" . $value . Message::EOL;
+                        $headers .= $header . ':' . $value . Message::EOL;
 									
 					mail($mail->getEmail(), $this->m_message->getSubject(), $this->m_message->getText(), $headers);
 				}
 			}
 
 		} catch (SmtpException $e) {
-			
 			throw new BulkException($e->getStack());
 		}
 	}
 	
 	
 	private function stopped () {
-		
 		global $_MySql;
 
-		$sql = "UPDATE `Queue`
+		$sql = 'UPDATE `Queue`
 				SET `isSending` = false, `isCompleted` = true
-				WHERE `id` = ".$this->m_queue->getID().";";
+				WHERE `id` = '.$this->m_queue->getID().';';
 		
         Mail::markUnsent();
 
@@ -315,12 +292,11 @@ l4P852DMLINVrvOXtNTlyDv5mHfbbzIXnSNFBnnNld5dZT/dIZSOOn0X/sU9Xh0vATAzzwXCZ4GU
 	
 	
 	private function started () {
-		
 		global $_MySql;
 /*
-		$sql = "UPDATE `Queue`
+		$sql = 'UPDATE `Queue`
 				SET `isSending` = true
-				WHERE `id` = ".$this->_Queue->getID().";";
+				WHERE `id` = '.$this->_Queue->getID().';';
 				
 		return $_MySql->query($sql);
 */
@@ -330,11 +306,10 @@ l4P852DMLINVrvOXtNTlyDv5mHfbbzIXnSNFBnnNld5dZT/dIZSOOn0X/sU9Xh0vATAzzwXCZ4GU
 	/** Starts the sending of emails
 	 */
 	public function start () {
-		
 		$this->started();
 		$this->sendBatch();
 	}
 }
 
-define("BULK", true, true);
+define('BULK', true, true);
 ?> 

@@ -5,11 +5,11 @@
  * @author Otto Sabart <seberm@gmail.com>
  */
 
-if (!defined("CURRENT_ROOT"))
-	define("CURRENT_ROOT", "../", true);
+if (!defined('CURRENT_ROOT'))
+	define('CURRENT_ROOT', '../', true);
 
-if (!defined("BULKEXCEPTION"))
-     require_once(CURRENT_ROOT."exceptions/BulkException.class.php");
+if (!defined('BULKEXCEPTION'))
+     require_once(CURRENT_ROOT.'exceptions/BulkException.class.php');
 
 
 final class QueueException extends BulkException {
@@ -17,7 +17,7 @@ final class QueueException extends BulkException {
 	public function getStack () {
 		
 		// Only for testing
-		$msg = "QUEUE: (File: ".pathinfo($this->getFile(), PATHINFO_FILENAME).":".$this->getLine().") - ".$this->getMessage();
+		$msg = 'QUEUE: (File: '.pathinfo($this->getFile(), PATHINFO_FILENAME).':'.$this->getLine().') - '.$this->getMessage();
 		
 		return $msg;
 	}
@@ -25,6 +25,6 @@ final class QueueException extends BulkException {
 }
 
 
-define("QUEUEEXCEPTION", true, true);
+define('QUEUEEXCEPTION', true, true);
 ?>  
  

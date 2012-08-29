@@ -17,5 +17,5 @@ interface SocketInterface {
 };
 
 
-define("SocketInterface", true, true);
+define('SocketInterface', true, true);
 ?>

@@ -12,5 +12,5 @@ interface BulkErrorsInterface {
 }
 
 
-define("BULKERRORSINTERFACE", true, true); 
+define('BULKERRORSINTERFACE', true, true); 
 ?>

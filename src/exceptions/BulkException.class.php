@@ -5,18 +5,18 @@
  * @author Otto Sabart <seberm@gmail.com>
  */
 
-if (!defined("CURRENT_ROOT"))
-	define("CURRENT_ROOT", "../", true);
+if (!defined('CURRENT_ROOT'))
+	define('CURRENT_ROOT', '../', true);
 		
 
 ### Interfaces
-if (!defined("BULKERRORSINTERFACE"))
-   require_once(CURRENT_ROOT."interfaces/BulkErrors.interface.php");
+if (!defined('BULKERRORSINTERFACE'))
+   require_once(CURRENT_ROOT.'interfaces/BulkErrors.interface.php');
    
  
 ### Logger
-if (!defined("LOGGER"))
-   require_once(CURRENT_ROOT."classes/Logger.class.php");
+if (!defined('LOGGER'))
+   require_once(CURRENT_ROOT.'classes/Logger.class.php');
    
 
 class BulkException extends ErrorException implements BulkErrorsInterface {
@@ -33,10 +33,10 @@ class BulkException extends ErrorException implements BulkErrorsInterface {
 	
 	public function getStack () {
 		
-		$msg = "BulkMailer - " . $this->getMessage();
+		$msg = 'BulkMailer - ' . $this->getMessage();
 
 		// Only for tessting
-		//$msg = "BulkMailer (File: ".pathinfo($this->getFile(), PATHINFO_FILENAME).":".$this->getLine().") - ".$this->getMessage();
+		//$msg = 'BulkMailer (File: '.pathinfo($this->getFile(), PATHINFO_FILENAME).':'.$this->getLine().') - '.$this->getMessage();
 		
 		// Write error message to system logger
 		$this->m_logger->addLog($msg);
@@ -46,5 +46,5 @@ class BulkException extends ErrorException implements BulkErrorsInterface {
 	
 }
 
-define("BULKEXCEPTION", true, true);
+define('BULKEXCEPTION', true, true);
 ?> 
