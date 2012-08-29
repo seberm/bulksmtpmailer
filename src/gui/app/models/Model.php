@@ -1,9 +1,9 @@
 <?php
 
-use Nette\Object;
-use Nette\Database\Connection;
-use Nette\InvalidStateException;
-use Nette\Environment;
+use Nette\Object,
+    Nette\Database\Connection,
+    Nette\InvalidStateException,
+    Nette\Environment;
 
 
 class Model extends Object {
