@@ -1,0 +1,17 @@
+{
+    "name": "BulkSMTPMailer",
+    "description": "Application for bulk sending of e-mails",
+    "version": "0.7.0",
+    "authors": [
+        {"name": "Otto Šabart", "email": "seberm@gmail.com"}
+    ],
+
+    "require": {
+        "php" : ">=5.3.2",
+        "nette/nette": "2.0.*"
+    },
+
+    "autoload": {
+        "psr-0": {"Seberm" : "/libs"}
+    }
+}
